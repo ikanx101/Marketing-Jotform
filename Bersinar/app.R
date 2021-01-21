@@ -14,6 +14,9 @@ library(shinydashboard)
 library(tidytext)
 library(shiny)
 library(shinymanager)
+library(ggplot2)
+library(ggpubr)
+library(leaflet)
 
 
 # ---------------------------------
@@ -22,7 +25,7 @@ rm(list=ls())
 # buat credential
 credentials = data.frame(
     user = c("ikanx", "nutrifood"), # mandatory
-    password = c("suntea", "rawabali"), # mandatory
+    password = c("suntea", "nutrisari"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -40,7 +43,9 @@ sidebar = dashboardSidebar(width = 250,
                                menuItem(tabName = 'filterpane',
                                         text = 'Read Me',icon = icon('check')),
                                menuItem(tabName = 'converter',
-                                        text = 'Converter',icon = icon('magic'))
+                                        text = 'Converter Sales Survey',icon = icon('dollar')),
+                               menuItem(tabName = 'awareness',
+                                        text = 'Converter Awareness Survey',icon = icon('comment'))
                                     )
                            )
 
@@ -56,20 +61,21 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 6 Januari 2021 10:26 WIB"),
+                                h3("update 21 Januari 2021 20:21 WIB"),
                                 h4("Apa yang berubah?"),
-                                h4("Selamat tahun baru semuanya. Kali ini sudah menggunakan format di tahun baru. Selamat dan semangat bekerja semuanya."),
-                                h5("copyright 2020"),
+                                h5("1. Penambahan username dan password agar lebih terjaga keamanannya."),
+                                h5("2. Ada dua panel tambahan untuk converting jotform survey sales dan survey awareness"),
+                                h5("copyright 2021"),
                                 h5("Dibuat menggunakan R")
                          )
                      )
             )
 
-# tab Converter
+# tab Converter Sales
 converter = tabItem(tabName = 'converter',
                      fluidRow(
                          column(width = 12,
-                                h1('Converter'),
+                                h1('Converter Sales Survey'),
                                 h4("Silakan upload file Anda:"),
                                 fileInput('target_upload', 'Pilih file',
                                           accept = c('xlsx')
@@ -77,16 +83,37 @@ converter = tabItem(tabName = 'converter',
                                 br(),
                                 downloadButton("downloadData", "Download")
                                 )
-                     )
+                     ),
+                    br(),
+                    fluidRow(
+                        column(width = 12,
+                               h2("Sebaran toko yang disurvey"),
+                               leafletOutput('peta_plot',height = 350))
+                    )
 )
 
+# tab Converter Awareness
+converter_2 = tabItem(tabName = 'awareness',
+                    fluidRow(
+                        column(width = 12,
+                               h1('Converter Awareness Survey'),
+                               h4("Silakan upload file Anda:"),
+                               fileInput('target_upload_2', 'Pilih file',
+                                         accept = c('xlsx')
+                               ),
+                               br(),
+                               downloadButton("downloadData_2", "Download")
+                        )
+                    )
+)
 
 # body
-body = dashboardBody(tabItems(filterpane,converter))
+body = dashboardBody(tabItems(filterpane,converter,converter_2))
 
 # ui all
 ui = secure_app(dashboardPage(skin = "green",header,sidebar,body))
 
+# server part
 server <- function(input, output,session) {
     
     # call the server part
@@ -254,12 +281,95 @@ server <- function(input, output,session) {
     
     output$downloadData <- downloadHandler(
         filename = function() {
-            paste("Converted Jotform ", Sys.time(), ".xlsx", sep="")
+            paste("Sales Survey Jotform ", Sys.time(), ".xlsx", sep="")
         },
         content = function(file) {
             openxlsx::write.xlsx(data(), file)
         }
     )
+    
+    # peta survey
+    output$peta_plot = renderLeaflet({
+        
+        new_data = 
+            data_upload() %>%
+            filter(!is.na(Longitude)) %>% 
+            distinct()
+        
+        leaflet() %>% addTiles() %>% addCircles(new_data$Longitude,
+                                                new_data$Latitude,
+                                                popup = paste0(new_data$`Nama Tempat Customer`),
+                                                radius = 10)
+        })
+
+    
+    # converter sales ya
+    data_upload_2 <- reactive({
+        inFile <- input$target_upload_2
+        if (is.null(inFile))
+            return(NULL)
+        
+        # baca data
+        data <- read_excel(inFile$datapath) %>% 
+            janitor::clean_names() 
+        
+        # =================================
+        # mulai dari sini
+        data_final = 
+            data %>% 
+            mutate(submission_date = lubridate::date(submission_date)) %>% 
+            separate(departemen_area_nama,
+                     into = c("departemen","area","nama"),
+                     sep = ";") %>% 
+            separate(brand_projek_materi,
+                     into = c("brand","project","materi"),
+                     sep = ";") %>% 
+            mutate(tanggal_aktivasi = gsub("\\/","-",tanggal_aktivasi),
+                   tanggal_aktivasi = as.Date(tanggal_aktivasi,"%m-%d-%Y"),
+                   tanggal_aktivasi = lubridate::date(tanggal_aktivasi)) %>% 
+            separate(jenis_channel_sub_channel_klasifikasi_channel,
+                     into = c("jenis_channel","sub_channel","klasifikasi_channel"),
+                     sep = ";") %>% 
+            separate(canal_platform_lokasi_room,
+                     into = c("canal","platform","lokasi_room"),
+                     sep = ";") %>% 
+            mutate(departemen = trimws(departemen),
+                   area = trimws(area),
+                   nama = trimws(nama),
+                   brand = trimws(brand),
+                   project = trimws(project),
+                   materi = trimws(materi),
+                   jenis_channel = trimws(jenis_channel),
+                   sub_channel = trimws(sub_channel),
+                   klasifikasi_channel = trimws(klasifikasi_channel),
+                   canal = trimws(canal),
+                   platform = trimws(platform),
+                   lokasi_room = trimws(lokasi_room))
+        
+        tes = colnames(data_final)
+        tes = gsub("\\_"," ",tes)
+        
+        proper <- function(x){
+            stringi::stri_trans_general(x,id = "Title")
+        }
+        
+        colnames(data_final) = proper(tes)
+        # =================================
+        # akhir di sini
+        return(data_final)
+    })
+    
+    data_2 = data_upload_2
+    
+    output$downloadData_2 <- downloadHandler(
+        filename = function() {
+            paste("Awareness Survey Jotform ", Sys.time(), ".xlsx", sep="")
+        },
+        content = function(file) {
+            openxlsx::write.xlsx(data_2(), file)
+        }
+    )
+    
 }
 
 # Run the application 

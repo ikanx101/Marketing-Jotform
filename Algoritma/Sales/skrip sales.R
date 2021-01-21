@@ -1,5 +1,5 @@
 rm(list=ls())
-setwd("~/Documents/Antara/Project DONE Rawabali/CD Arga Caesar")
+setwd("~/Marketing-Jotform/Algoritma/Sales")
 
 # libraries
 library(readxl)
@@ -10,7 +10,7 @@ library(tidyr)
 
 # ambil data
 data = 
-  read_excel("CPF - Event Sales Form(2021-01-08).xlsx") %>% 
+  read_excel("data 2021.xlsx") %>% 
   janitor::clean_names()
 
 # tambahin id
