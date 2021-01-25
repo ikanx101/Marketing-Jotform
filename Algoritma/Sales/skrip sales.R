@@ -10,7 +10,7 @@ library(tidyr)
 
 # ambil data
 data = 
-  read_excel("data 2021.xlsx") %>% 
+  read_excel("uji coba.xlsx") %>% 
   janitor::clean_names()
 
 # tambahin id
@@ -136,13 +136,8 @@ data_final =
 
 data_final = 
   data_final %>% 
-  mutate(tanggal_new = tanggal_transaksi) %>% 
-  separate(tanggal_new, 
-           into = c("bulan_transaksi_new",
-                    "tanggal_transaksi_new",
-                    "tahun_transaksi_new"),
-           sep = "/") %>% 
-  relocate(tanggal_transaksi_new,bulan_transaksi_new,tahun_transaksi_new,.after = tanggal_transaksi)
+  mutate(tanggal_transaksi = as.Date(tanggal_transaksi),
+         submission_date = as.Date(submission_date))
   
 tes = colnames(data_final)
 tes = gsub("\\_"," ",tes)
@@ -152,3 +147,36 @@ proper <- function(x){
 }
 
 colnames(data_final) = proper(tes)
+
+library(leaflet)
+new_data = 
+  data_final %>% 
+  filter(!is.na(Longitude)) %>% 
+  distinct() %>% 
+  mutate(label = paste0(stringi::stri_trans_general(`Nama Tempat Customer`,id = "Title"),
+                        "<br/>Telp 0",`Nomor Telepon`),
+         `Total Value` = ifelse(is.na(`Total Value`),0,`Total Value`)) %>% 
+  group_by(label,Longitude,Latitude,`Nomor Telepon`) %>% 
+  summarise(omset = sum(`Total Value`)) %>% 
+  ungroup() %>% 
+  mutate(label = paste0(label,"<br/>Total Value: Rp",omset))
+
+leaflet() %>% addTiles() %>% addCircles(new_data$Longitude,
+                                        new_data$Latitude,
+                                        popup = new_data$label,
+                                        radius = 10)
+
+data_final %>% 
+  mutate(`Nama Tempat Customer` = tolower(`Nama Tempat Customer`)) %>% 
+  group_by(Nama,`Tanggal Transaksi`) %>% 
+  summarise(Freq = length(`Nama Tempat Customer`)) %>% 
+  ungroup() %>% 
+  filter(!is.na(`Tanggal Transaksi`)) %>% 
+  ggplot() +
+  geom_tile(aes(x = `Tanggal Transaksi`,
+                y = Nama,
+                fill = Freq)) +
+  scale_fill_gradient(low = "darkred",high = "steelblue") +
+  theme_minimal() +
+  labs(title = "Kalender Kunjungan",
+       fill = "Banyak Toko Dikunjungi")

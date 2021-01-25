@@ -89,6 +89,12 @@ converter = tabItem(tabName = 'converter',
                         column(width = 12,
                                h2("Sebaran toko yang disurvey"),
                                leafletOutput('peta_plot',height = 350))
+                    ),
+                    br(),
+                    fluidRow(
+                        column(width = 12,
+                               h2("Kalender Kunjungan"),
+                               plotOutput("kalen_plot",height = 250))
                     )
 )
 
@@ -255,13 +261,8 @@ server <- function(input, output,session) {
         
         data_final = 
             data_final %>% 
-            mutate(tanggal_new = tanggal_transaksi) %>% 
-            separate(tanggal_new, 
-                     into = c("bulan_transaksi_new",
-                              "tanggal_transaksi_new",
-                              "tahun_transaksi_new"),
-                     sep = "/") %>% 
-            relocate(tanggal_transaksi_new,bulan_transaksi_new,tahun_transaksi_new,.after = tanggal_transaksi)
+            mutate(tanggal_transaksi = as.Date(tanggal_transaksi),
+                   submission_date = as.Date(submission_date))
         
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
@@ -294,13 +295,38 @@ server <- function(input, output,session) {
         new_data = 
             data_upload() %>%
             filter(!is.na(Longitude)) %>% 
-            distinct()
+            distinct() %>% 
+            mutate(label = paste0(stringi::stri_trans_general(`Nama Tempat Customer`,id = "Title"),
+                                  "<br/>Telp 0",`Nomor Telepon`),
+                   `Total Value` = ifelse(is.na(`Total Value`),0,`Total Value`)) %>% 
+            group_by(label,Longitude,Latitude,`Nomor Telepon`) %>% 
+            summarise(omset = sum(`Total Value`)) %>% 
+            ungroup() %>% 
+            mutate(label = paste0(label,"<br/>Total Value: Rp",omset))
         
         leaflet() %>% addTiles() %>% addCircles(new_data$Longitude,
                                                 new_data$Latitude,
-                                                popup = paste0(new_data$`Nama Tempat Customer`),
+                                                popup = new_data$label,
                                                 radius = 10)
         })
+    
+    
+    output$kalen_plot = renderPlot({
+        data_upload() %>% 
+            mutate(`Nama Tempat Customer` = tolower(`Nama Tempat Customer`)) %>% 
+            group_by(Nama,`Tanggal Transaksi`) %>% 
+            summarise(Freq = length(`Nama Tempat Customer`)) %>% 
+            ungroup() %>% 
+            filter(!is.na(`Tanggal Transaksi`)) %>% 
+            ggplot() +
+            geom_tile(aes(x = `Tanggal Transaksi`,
+                          y = Nama,
+                          fill = Freq)) +
+            scale_fill_gradient(low = "darkred",high = "steelblue") +
+            theme_minimal() +
+            labs(title = "Kalender Kunjungan",
+                 fill = "Banyak Toko Dikunjungi")
+    })
 
     
     # converter sales ya
