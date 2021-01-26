@@ -1,5 +1,5 @@
 rm(list=ls())
-setwd("~/Marketing-Jotform/Algoritma/Sales")
+#setwd("~/Marketing-Jotform/Algoritma/Sales")
 
 # libraries
 library(readxl)
@@ -10,7 +10,7 @@ library(tidyr)
 
 # ambil data
 data = 
-  read_excel("uji coba.xlsx") %>% 
+  read_excel("uji coba 2.xlsx") %>% 
   janitor::clean_names()
 
 # tambahin id
@@ -21,7 +21,7 @@ data =
          tanggal_transaksi = gsub("\\/","-",tanggal_transaksi),
          tanggal_transaksi = as.Date(tanggal_transaksi,"%m-%d-%Y"),
          tanggal_transaksi = lubridate::date(tanggal_transaksi),
-         tanggal_transaksi = format(tanggal_transaksi,"%m/%d/%Y")) %>% 
+         submission_date = lubridate::date(submission_date)) %>% 
   separate(departemen_area_nama,
            into = c("departemen","area","nama"),
            sep = ";") %>% 
@@ -134,11 +134,6 @@ data_final =
   mutate(penanda = NULL,
          id = NULL)
 
-data_final = 
-  data_final %>% 
-  mutate(tanggal_transaksi = as.Date(tanggal_transaksi),
-         submission_date = as.Date(submission_date))
-  
 tes = colnames(data_final)
 tes = gsub("\\_"," ",tes)
 
@@ -147,7 +142,9 @@ proper <- function(x){
 }
 
 colnames(data_final) = proper(tes)
+openxlsx::write.xlsx(data_final,"hasil.xlsx")
 
+library(ggplot2)
 library(leaflet)
 new_data = 
   data_final %>% 
@@ -180,3 +177,5 @@ data_final %>%
   theme_minimal() +
   labs(title = "Kalender Kunjungan",
        fill = "Banyak Toko Dikunjungi")
+
+

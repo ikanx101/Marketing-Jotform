@@ -61,10 +61,9 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 21 Januari 2021 20:21 WIB"),
+                                h3("update 26 Januari 2021 13:38 WIB"),
                                 h4("Apa yang berubah?"),
-                                h5("1. Penambahan username dan password agar lebih terjaga keamanannya."),
-                                h5("2. Ada dua panel tambahan untuk converting jotform survey sales dan survey awareness"),
+                                h5("Format tanggal sudah diperbaiki."),
                                 h5("copyright 2021"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -146,7 +145,7 @@ server <- function(input, output,session) {
                    tanggal_transaksi = gsub("\\/","-",tanggal_transaksi),
                    tanggal_transaksi = as.Date(tanggal_transaksi,"%m-%d-%Y"),
                    tanggal_transaksi = lubridate::date(tanggal_transaksi),
-                   tanggal_transaksi = format(tanggal_transaksi,"%m/%d/%Y")) %>% 
+                   submission_date = lubridate::date(submission_date)) %>% 
             separate(departemen_area_nama,
                      into = c("departemen","area","nama"),
                      sep = ";") %>% 
@@ -258,11 +257,6 @@ server <- function(input, output,session) {
             data.frame(data_all_1,data_all_2) %>% 
             mutate(penanda = NULL,
                    id = NULL)
-        
-        data_final = 
-            data_final %>% 
-            mutate(tanggal_transaksi = as.Date(tanggal_transaksi),
-                   submission_date = as.Date(submission_date))
         
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
