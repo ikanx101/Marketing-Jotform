@@ -10,7 +10,7 @@ library(tidyr)
 
 # ambil data
 data = 
-  read_excel("uji coba 2.xlsx") %>% 
+  read_excel("uji coba new.xlsx") %>% 
   janitor::clean_names()
 
 # tambahin id
