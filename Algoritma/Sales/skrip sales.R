@@ -1,5 +1,4 @@
 rm(list=ls())
-#setwd("~/Marketing-Jotform/Algoritma/Sales")
 
 # libraries
 library(readxl)
@@ -10,7 +9,7 @@ library(tidyr)
 
 # ambil data
 data = 
-  read_excel("uji coba new.xlsx") %>% 
+  read_excel("tes.xlsx") %>% 
   janitor::clean_names()
 
 # tambahin id
@@ -25,8 +24,8 @@ data =
   separate(departemen_area_nama,
            into = c("departemen","area","nama"),
            sep = ";") %>% 
-  separate(jenis_channel_sub_channel,
-           into = c("jenis_channel","sub_channel"),
+  separate(jenis_channel_sub_channel_klasifikasi,
+           into = c("jenis_channel","sub_channel","klasifikasi"),
            sep = ";") %>% 
   separate(provinsi_kota_kab_kecamatan_kelurahan,
            into = c("provinsi","kota_kab","kecamatan","kelurahan"),
@@ -146,6 +145,8 @@ openxlsx::write.xlsx(data_final,"hasil.xlsx")
 
 library(ggplot2)
 library(leaflet)
+library(ggalluvial)
+
 new_data = 
   data_final %>% 
   filter(!is.na(Longitude)) %>% 
@@ -176,6 +177,31 @@ data_final %>%
   scale_fill_gradient(low = "darkred",high = "steelblue") +
   theme_minimal() +
   labs(title = "Kalender Kunjungan",
-       fill = "Banyak Toko Dikunjungi")
+       fill = "Banyak Toko Dikunjungi",
+       subtitle = "Semua Data yang Diupload",
+       caption = "Visualized using R\nikanx101.com") +
+  theme(legend.position = "bottom")
 
-
+data_final %>% 
+  select(Nama,`Tanggal Transaksi`,`Nama Tempat Customer`,`Jenis Channel`,`Provinsi`,`Kota Kab`) %>% 
+  distinct() %>% 
+  group_by(`Provinsi`,`Kota Kab`,`Jenis Channel`) %>% 
+  summarise(freq = n()) %>% 
+  ungroup() %>% 
+  ggplot(aes(axis1 = `Provinsi`,
+             axis2 = `Kota Kab`,
+             axis3 = `Jenis Channel`,
+             y = freq)) +
+  scale_x_discrete(limits = c("Provinsi", "Kota Kab", "Jenis Channel"), expand = c(.2, .05)) +
+  geom_alluvium(color = "Black",
+                aes(fill = `Provinsi`)) +
+  geom_stratum() +
+  geom_text(stat = "stratum", 
+            aes(label = after_stat(stratum)),
+            size = 3) +
+  theme_minimal() +
+  labs(title = "Provinsi - Kota Kabupaten - Jenis Channel",
+       subtitle = "Semua Data yang Diupload",
+       caption = "Visualized using R\nikanx101.com",
+       y = "Banyak Customer") +
+  theme(legend.position = "none")
