@@ -47,7 +47,8 @@ data =
          longitude = as.numeric(longitude),
          latitude = as.numeric(latitude),
          csv = gsub("CSV: ","",csv)
-         )
+         ) %>% 
+  mutate(klasifikasi = stringr::str_trim(klasifikasi))
 
 # penjualan products
 judul = colnames(data)

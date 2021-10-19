@@ -62,7 +62,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 5 Februari Januari 2021 17:22 WIB"),
+                                h3("update 19 Oktober 2021 08:00 WIB"),
                                 h4("Apa yang berubah?"),
                                 h5("Ditambahkan untuk klasifikasi outlet"),
                                 h5("copyright 2021"),
@@ -173,7 +173,8 @@ server <- function(input, output,session) {
                    longitude = as.numeric(longitude),
                    latitude = as.numeric(latitude),
                    csv = gsub("CSV: ","",csv)
-            )
+            ) %>% 
+            mutate(klasifikasi = stringr::str_trim(klasifikasi))
         
         # penjualan products
         judul = colnames(data)
