@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("xxxx", "xxxx"), # mandatory
-    password = c("xxxx", "xxxx"), # mandatory
+    user = c("xx", "xxxx"), # mandatory
+    password = c("xx", "xxxx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
