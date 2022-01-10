@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("ikanx", "nutrifood"), # mandatory
-    password = c("suntea", "nutrisari"), # mandatory
+    user = c("xxxx", "xxxx"), # mandatory
+    password = c("xxxx", "xxxx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -169,6 +169,11 @@ server <- function(input, output,session) {
         return(tes)
     }
     
+    # bikin judul properly
+    proper <- function(x){
+        stringi::stri_trans_general(x,id = "Title")
+    }
+    
     data_upload <- reactive({
         inFile <- input$target_upload
         if (is.null(inFile))
@@ -270,10 +275,6 @@ server <- function(input, output,session) {
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
         
-        proper <- function(x){
-            stringi::stri_trans_general(x,id = "Title")
-        }
-        
         colnames(data_final) = proper(tes)
         colnames(data_final)[colnames(data_final) == "Produk"] = "SKU"
         
@@ -364,7 +365,7 @@ server <- function(input, output,session) {
     
 
     
-    # converter sales ya
+    # converter awareness ya
     data_upload_2 <- reactive({
         inFile <- input$target_upload_2
         if (is.null(inFile))
@@ -376,23 +377,27 @@ server <- function(input, output,session) {
         
         # =================================
         # mulai dari sini
+        
         data_final = 
             data %>% 
             mutate(submission_date = lubridate::date(submission_date)) %>% 
-            separate(departemen_area_nama,
+            separate(department_area_nama,
                      into = c("departemen","area","nama"),
+                     sep = ";") %>% 
+            separate(provinsi_kota_kab,
+                     into = c("provinsi","kota_kab"),
                      sep = ";") %>% 
             separate(brand_projek_materi,
                      into = c("brand","project","materi"),
                      sep = ";") %>% 
-            mutate(tanggal_aktivasi = gsub("\\/","-",tanggal_aktivasi),
-                   tanggal_aktivasi = as.Date(tanggal_aktivasi,"%m-%d-%Y"),
-                   tanggal_aktivasi = lubridate::date(tanggal_aktivasi)) %>% 
-            separate(jenis_channel_sub_channel_klasifikasi_channel,
+            mutate(tanggal_kegiatan = gsub("\\/","-",tanggal_kegiatan),
+                   tanggal_kegiatan = as.Date(tanggal_kegiatan,"%m-%d-%Y"),
+                   tanggal_kegiatan = lubridate::date(tanggal_kegiatan)) %>% 
+            separate(jenis_channel_sub_channel_klasifikasi,
                      into = c("jenis_channel","sub_channel","klasifikasi_channel"),
                      sep = ";") %>% 
-            separate(canal_platform_lokasi_room,
-                     into = c("canal","platform","lokasi_room"),
+            separate(kanal_platform_lokasi_room,
+                     into = c("kanal","platform","lokasi_room"),
                      sep = ";") %>% 
             mutate(departemen = trimws(departemen),
                    area = trimws(area),
@@ -403,18 +408,17 @@ server <- function(input, output,session) {
                    jenis_channel = trimws(jenis_channel),
                    sub_channel = trimws(sub_channel),
                    klasifikasi_channel = trimws(klasifikasi_channel),
-                   canal = trimws(canal),
+                   kanal = trimws(kanal),
                    platform = trimws(platform),
-                   lokasi_room = trimws(lokasi_room))
+                   lokasi_room = trimws(lokasi_room),
+                   provinsi = trimws(provinsi),
+                   kota_kab = trimws(kota_kab))
         
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
         
-        proper <- function(x){
-            stringi::stri_trans_general(x,id = "Title")
-        }
-        
         colnames(data_final) = proper(tes)
+        
         # =================================
         # akhir di sini
         return(data_final)
