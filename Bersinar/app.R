@@ -62,10 +62,10 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 19 Oktober 2021 08:00 WIB"),
+                                h3("update 10 Januari 2022 09:00 WIB"),
                                 h4("Apa yang berubah?"),
-                                h5("Ditambahkan untuk klasifikasi outlet"),
-                                h5("copyright 2021"),
+                                h5("Penyesuaian form baru 2022"),
+                                h5("copyright 2022"),
                                 h5("Dibuat menggunakan R")
                          )
                      )
@@ -117,7 +117,7 @@ converter_2 = tabItem(tabName = 'awareness',
 body = dashboardBody(tabItems(filterpane,converter,converter_2))
 
 # ui all
-ui = secure_app(dashboardPage(skin = "green",header,sidebar,body))
+ui = secure_app(dashboardPage(skin = "black",header,sidebar,body))
 
 # server part
 server <- function(input, output,session) {
@@ -127,6 +127,47 @@ server <- function(input, output,session) {
     res_auth <- secure_server(
         check_credentials = check_credentials(credentials)
     )
+    
+    # bikin function dulu
+    # extract tanggal
+    extract_tanggal = function(tes){
+        tes = unlist(strsplit(tes,split = " "))
+        tes = tes[1]
+        tes = lubridate::date(tes)
+        return(tes)
+    }
+    
+    # extract longitude
+    extract_long = function(tes){
+        if(is.na(tes)){
+            tes = NA
+        }
+        else if(!is.na(tes)){
+            tes = unlist(strsplit(tes,split = "\\n"))
+            # long
+            n = 1
+            tes = unlist(strsplit(tes[n],split = " "))
+            tes = tes[2]
+            tes = as.numeric(tes)
+        }
+        return(tes)
+    }
+    
+    # extract latitude
+    extract_lat = function(tes){
+        if(is.na(tes)){
+            tes = NA
+        }
+        else if(!is.na(tes)){
+            tes = unlist(strsplit(tes,split = "\\n"))
+            # long
+            n = 2
+            tes = unlist(strsplit(tes[n],split = " "))
+            tes = tes[2]
+            tes = as.numeric(tes)
+        }
+        return(tes)
+    }
     
     data_upload <- reactive({
         inFile <- input$target_upload
@@ -138,27 +179,40 @@ server <- function(input, output,session) {
             janitor::clean_names() 
         
         # =================================
-        # mulai dari sini
+        # mulai dari sini - paste
+        
+        # tambahin id
+        data$id = 1:nrow(data)
+        data$longitude = 1
+        data$latitude = 1
+        for(i in 1:nrow(data)){
+            data$longitude[i] = extract_long(data$location_coordinate[i])
+            data$latitude[i] = extract_lat(data$location_coordinate[i])
+        }
         
         data = 
             data %>% 
-            mutate(id = c(1:length(submission_date)),
-                   tanggal_transaksi = gsub("\\/","-",tanggal_transaksi),
+            rowwise() %>% 
+            mutate(tanggal_transaksi = gsub("\\/","-",tanggal_transaksi),
                    tanggal_transaksi = as.Date(tanggal_transaksi,"%m-%d-%Y"),
                    tanggal_transaksi = lubridate::date(tanggal_transaksi),
-                   submission_date = lubridate::date(submission_date)) %>% 
-            separate(departemen_area_nama,
+                   submission_date = extract_tanggal(submission_date)) %>%
+            ungroup() %>% 
+            separate(projek_sub_projek,
+                     into = c("projek","sub_projek"),
+                     sep = ";") %>% 
+            separate(sumber_barang_intermediaries_name,
+                     into = c("sumber_barang","intermediaries_name"),
+                     sep = ";") %>% 
+            separate(department_area_nama,
                      into = c("departemen","area","nama"),
                      sep = ";") %>% 
             separate(jenis_channel_sub_channel_klasifikasi,
                      into = c("jenis_channel","sub_channel","klasifikasi"),
-                     sep = ";")  %>% 
+                     sep = ";") %>% 
             separate(provinsi_kota_kab_kecamatan_kelurahan,
                      into = c("provinsi","kota_kab","kecamatan","kelurahan"),
                      sep = ";") %>% 
-            separate(location_coordinate,
-                     into = c("longitude","latitude","csv"),
-                     sep = "\r\n") %>% 
             mutate(departemen = trimws(departemen),
                    area = trimws(area),
                    nama = trimws(nama),
@@ -168,11 +222,7 @@ server <- function(input, output,session) {
                    kota_kab = trimws(kota_kab),
                    kecamatan = trimws(kecamatan),
                    kelurahan = trimws(kelurahan),
-                   longitude = gsub("Longitude: ","",longitude),
-                   latitude = gsub("Latitude: ","",latitude),
-                   longitude = as.numeric(longitude),
-                   latitude = as.numeric(latitude),
-                   csv = gsub("CSV: ","",csv)
+                   location_coordinate = NULL
             ) %>% 
             mutate(klasifikasi = stringr::str_trim(klasifikasi))
         
@@ -183,8 +233,7 @@ server <- function(input, output,session) {
         
         # pecah data
         data_1 = data %>% select(id,penjualan)
-        data_2 = data %>% select(id,contains("gimmick"))
-        data_3 = data %>% select(-penjualan,-contains("gimmick"))
+        data_2 = data %>% select(-penjualan)
         
         # data_1
         # pecah produk penjualan
@@ -216,49 +265,7 @@ server <- function(input, output,session) {
             mutate(total_value = price*quantity)
         
         # data_2
-        # oprek gimmick
-        data_2 = 
-            data_2 %>% 
-            reshape2::melt(id.vars = "id") %>% 
-            rename(gimmick = variable) %>% 
-            mutate(value = as.numeric(value),
-                   value = ifelse(is.na(value),0,value)) %>% 
-            mutate(brand = case_when(grepl("hi_lo",gimmick) ~ "HiLo",
-                                     grepl("lokalate",gimmick) ~ "Lokalate",
-                                     grepl("nutrisari|ns",gimmick) ~ "NutriSari",
-                                     grepl("tropicana|ts",gimmick) ~ "Tropicana Slim")
-            ) %>% 
-            group_by(id,brand) %>% 
-            summarise(tot_gim = sum(value)) %>% 
-            ungroup() %>% 
-            filter(tot_gim > 0)
-        
-        brand_gimmick = sort(unique(data_2$brand))
-        
-        for(xx in brand_gimmick){
-            temp = data_2 %>% filter(brand == xx & !is.na(tot_gim))
-            colnames(temp)[3] = paste("gimmick",xx,sep = "_")
-            data_all = merge(data_all,temp,all = T)
-        }
-        
-        # data_3
-        data_all = merge(data_3,data_all,all = T) %>% arrange(id,brand)
-        
-        data_all_1 = data_all %>% select(-contains("gimmick"))
-        
-        data_all_2 = 
-            data_all %>% 
-            group_by(id,brand) %>% 
-            mutate(penanda = c(1:length(brand))) %>% 
-            ungroup() %>% 
-            select(contains("gimmick"),penanda) 
-        
-        data_all_2[data_all_2$penanda>1,] = NA
-        
-        data_final = 
-            data.frame(data_all_1,data_all_2) %>% 
-            mutate(penanda = NULL,
-                   id = NULL)
+        data_final = merge(data_2,data_all,all = T) %>% arrange(id,brand) %>% distinct()
         
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
@@ -268,7 +275,9 @@ server <- function(input, output,session) {
         }
         
         colnames(data_final) = proper(tes)
+        colnames(data_final)[colnames(data_final) == "Produk"] = "SKU"
         
+        # kalau mau hapus, baris atas ini
         # =================================
         # akhir di sini
         return(data_final)
@@ -293,7 +302,7 @@ server <- function(input, output,session) {
             filter(!is.na(Longitude)) %>% 
             distinct() %>% 
             mutate(label = paste0(stringi::stri_trans_general(`Nama Tempat Customer`,id = "Title"),
-                                  "<br/>Telp 0",`Nomor Telepon`),
+                                  "<br/>Telp ",`Nomor Telepon`),
                    `Total Value` = ifelse(is.na(`Total Value`),0,`Total Value`)) %>% 
             group_by(label,Longitude,Latitude,`Nomor Telepon`) %>% 
             summarise(omset = sum(`Total Value`)) %>% 
