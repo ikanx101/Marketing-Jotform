@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("xx", "xxxx"), # mandatory
-    password = c("xx", "xxxx"), # mandatory
+    user = c("x", "xxxx"), # mandatory
+    password = c("x", "xxxx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -62,7 +62,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 10 Januari 2022 14:04 WIB"),
+                                h3("update 10 Januari 2022 14:30 WIB"),
                                 h4("Apa yang berubah?"),
                                 h5("Penyesuaian form baru 2022"),
                                 h5("copyright 2022"),
@@ -210,7 +210,7 @@ server <- function(input, output,session) {
                      into = c("sumber_barang","intermediaries_name"),
                      sep = ";") %>% 
             separate(department_area_nama,
-                     into = c("departemen","area","nama"),
+                     into = c("department","area","nama"),
                      sep = ";") %>% 
             separate(jenis_channel_sub_channel_klasifikasi,
                      into = c("jenis_channel","sub_channel","klasifikasi"),
@@ -218,7 +218,7 @@ server <- function(input, output,session) {
             separate(provinsi_kota_kab_kecamatan_kelurahan,
                      into = c("provinsi","kota_kab","kecamatan","kelurahan"),
                      sep = ";") %>% 
-            mutate(departemen = trimws(departemen),
+            mutate(department = trimws(department),
                    area = trimws(area),
                    nama = trimws(nama),
                    jenis_channel = trimws(jenis_channel),
@@ -277,6 +277,7 @@ server <- function(input, output,session) {
             select(-id) %>% 
             relocate(latitude,.before = ada_platform_online) %>% 
             relocate(longitude,.before = latitude)
+        
         
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
@@ -388,7 +389,7 @@ server <- function(input, output,session) {
             data %>% 
             mutate(submission_date = lubridate::date(submission_date)) %>% 
             separate(department_area_nama,
-                     into = c("departemen","area","nama"),
+                     into = c("department","area","nama"),
                      sep = ";") %>% 
             separate(provinsi_kota_kab,
                      into = c("provinsi","kota_kab"),
@@ -405,7 +406,7 @@ server <- function(input, output,session) {
             separate(kanal_platform_lokasi_room,
                      into = c("kanal","platform","lokasi_room"),
                      sep = ";") %>% 
-            mutate(departemen = trimws(departemen),
+            mutate(department = trimws(department),
                    area = trimws(area),
                    nama = trimws(nama),
                    brand = trimws(brand),
