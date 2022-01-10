@@ -77,7 +77,7 @@ data =
            into = c("sumber_barang","intermediaries_name"),
            sep = ";") %>% 
   separate(department_area_nama,
-           into = c("departemen","area","nama"),
+           into = c("department","area","nama"),
            sep = ";") %>% 
   separate(jenis_channel_sub_channel_klasifikasi,
            into = c("jenis_channel","sub_channel","klasifikasi"),
@@ -85,7 +85,7 @@ data =
   separate(provinsi_kota_kab_kecamatan_kelurahan,
            into = c("provinsi","kota_kab","kecamatan","kelurahan"),
            sep = ";") %>% 
-  mutate(departemen = trimws(departemen),
+  mutate(department = trimws(department),
          area = trimws(area),
          nama = trimws(nama),
          jenis_channel = trimws(jenis_channel),
@@ -137,7 +137,14 @@ data_all =
   mutate(total_value = price*quantity)
 
 # data_2
-data_final = merge(data_2,data_all,all = T) %>% arrange(id,brand) %>% distinct()
+data_final = 
+  merge(data_2,data_all,all = T) %>% 
+  arrange(id,brand) %>% 
+  distinct() %>% 
+  select(-id) %>% 
+  relocate(latitude,.before = ada_platform_online) %>% 
+  relocate(longitude,.before = latitude)
+  
 
 tes = colnames(data_final)
 tes = gsub("\\_"," ",tes)

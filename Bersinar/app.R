@@ -62,7 +62,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 10 Januari 2022 09:00 WIB"),
+                                h3("update 10 Januari 2022 14:04 WIB"),
                                 h4("Apa yang berubah?"),
                                 h5("Penyesuaian form baru 2022"),
                                 h5("copyright 2022"),
@@ -270,7 +270,13 @@ server <- function(input, output,session) {
             mutate(total_value = price*quantity)
         
         # data_2
-        data_final = merge(data_2,data_all,all = T) %>% arrange(id,brand) %>% distinct()
+        data_final = 
+            merge(data_2,data_all,all = T) %>% 
+            arrange(id,brand) %>% 
+            distinct() %>% 
+            select(-id) %>% 
+            relocate(latitude,.before = ada_platform_online) %>% 
+            relocate(longitude,.before = latitude)
         
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
