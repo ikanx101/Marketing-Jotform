@@ -13,6 +13,7 @@ extract_tanggal = function(tes){
   tes = unlist(strsplit(tes,split = " "))
   tes = tes[1]
   tes = lubridate::date(tes)
+  tes = format(tes,"%d/%m/%Y")
   return(tes)
 }
 
@@ -50,7 +51,7 @@ extract_lat = function(tes){
 
 # ambil data
 data = 
-  read_excel("tes.xlsx") %>% 
+  read_excel("SALES_PROJECT_FORM_CPE_20222022-01-10_23_10_05.xlsx") %>% 
   janitor::clean_names()
 
 # tambahin id
@@ -66,8 +67,8 @@ data =
   data %>% 
   rowwise() %>% 
   mutate(tanggal_transaksi = gsub("\\/","-",tanggal_transaksi),
-         tanggal_transaksi = as.Date(tanggal_transaksi,"%m-%d-%Y"),
-         tanggal_transaksi = lubridate::date(tanggal_transaksi),
+         tanggal_transaksi = as.Date(tanggal_transaksi,"%d-%m-%Y"),
+         tanggal_transaksi = format(tanggal_transaksi,"%d/%m/%Y"),
          submission_date = extract_tanggal(submission_date)) %>%
   ungroup() %>% 
   separate(projek_sub_projek,

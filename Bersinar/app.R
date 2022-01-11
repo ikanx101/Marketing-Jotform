@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("x", "xxxx"), # mandatory
-    password = c("x", "xxxx"), # mandatory
+    user = c("x", "ddd"), # mandatory
+    password = c("x", "ddd"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -134,6 +134,7 @@ server <- function(input, output,session) {
         tes = unlist(strsplit(tes,split = " "))
         tes = tes[1]
         tes = lubridate::date(tes)
+        tes = format(tes,"%d/%m/%Y")
         return(tes)
     }
     
@@ -199,8 +200,8 @@ server <- function(input, output,session) {
             data %>% 
             rowwise() %>% 
             mutate(tanggal_transaksi = gsub("\\/","-",tanggal_transaksi),
-                   tanggal_transaksi = as.Date(tanggal_transaksi,"%m-%d-%Y"),
-                   tanggal_transaksi = lubridate::date(tanggal_transaksi),
+                   tanggal_transaksi = as.Date(tanggal_transaksi,"%d-%m-%Y"),
+                   tanggal_transaksi = format(tanggal_transaksi,"%d/%m/%Y"),
                    submission_date = extract_tanggal(submission_date)) %>%
             ungroup() %>% 
             separate(projek_sub_projek,
