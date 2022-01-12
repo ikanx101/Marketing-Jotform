@@ -1,0 +1,13 @@
+name: jotform_converter
+title: jotform_converter
+username:
+account: ikanx
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5414763
+bundleId: 5458475
+url: https://ikanx.shinyapps.io/jotform_converter/
+when: 1641953546.26929
+lastSyncTime: 1641953546.26933
+asMultiple: FALSE
+asStatic: FALSE

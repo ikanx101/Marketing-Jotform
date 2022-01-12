@@ -10,9 +10,10 @@ data = read_excel("Contoh Data.xlsx") %>% janitor::clean_names()
 
 data_final = 
   data %>% 
-  mutate(submission_date = lubridate::date(submission_date)) %>% 
+  mutate(submission_date = lubridate::date(submission_date),
+         submission_date = format.Date(submission_date,"%d/%m/%Y")) %>% 
   separate(department_area_nama,
-           into = c("departemen","area","nama"),
+           into = c("department","area","nama"),
            sep = ";") %>% 
   separate(provinsi_kota_kab,
            into = c("provinsi","kota_kab"),
@@ -21,15 +22,16 @@ data_final =
            into = c("brand","project","materi"),
            sep = ";") %>% 
   mutate(tanggal_kegiatan = gsub("\\/","-",tanggal_kegiatan),
-         tanggal_kegiatan = as.Date(tanggal_kegiatan,"%m-%d-%Y"),
-         tanggal_kegiatan = lubridate::date(tanggal_kegiatan)) %>% 
+         tanggal_kegiatan = as.Date(tanggal_kegiatan,"%d-%m-%Y"),
+         tanggal_kegiatan = lubridate::date(tanggal_kegiatan),
+         tanggal_kegiatan = format.Date(tanggal_kegiatan,"%d/%m/%Y")) %>% 
   separate(jenis_channel_sub_channel_klasifikasi,
            into = c("jenis_channel","sub_channel","klasifikasi_channel"),
            sep = ";") %>% 
   separate(kanal_platform_lokasi_room,
            into = c("kanal","platform","lokasi_room"),
            sep = ";") %>% 
-  mutate(departemen = trimws(departemen),
+  mutate(department = trimws(department),
          area = trimws(area),
          nama = trimws(nama),
          brand = trimws(brand),

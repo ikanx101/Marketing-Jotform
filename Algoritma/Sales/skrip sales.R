@@ -13,7 +13,7 @@ extract_tanggal = function(tes){
   tes = unlist(strsplit(tes,split = " "))
   tes = tes[1]
   tes = lubridate::date(tes)
-  tes = format(tes,"%d/%m/%Y")
+  tes = format.Date(tes,"%d/%m/%Y")
   return(tes)
 }
 
@@ -68,7 +68,7 @@ data =
   rowwise() %>% 
   mutate(tanggal_transaksi = gsub("\\/","-",tanggal_transaksi),
          tanggal_transaksi = as.Date(tanggal_transaksi,"%d-%m-%Y"),
-         tanggal_transaksi = format(tanggal_transaksi,"%d/%m/%Y"),
+         tanggal_transaksi = format.Date(tanggal_transaksi,"%d/%m/%Y"),
          submission_date = extract_tanggal(submission_date)) %>%
   ungroup() %>% 
   separate(projek_sub_projek,

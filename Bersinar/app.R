@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("x", "ddd"), # mandatory
-    password = c("x", "ddd"), # mandatory
+    user = c("x", "xx"), # mandatory
+    password = c("x", "xx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -62,7 +62,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 10 Januari 2022 14:30 WIB"),
+                                h3("update 12 Januari 2022 09:00 WIB"),
                                 h4("Apa yang berubah?"),
                                 h5("Penyesuaian form baru 2022"),
                                 h5("copyright 2022"),
@@ -134,7 +134,7 @@ server <- function(input, output,session) {
         tes = unlist(strsplit(tes,split = " "))
         tes = tes[1]
         tes = lubridate::date(tes)
-        tes = format(tes,"%d/%m/%Y")
+        tes = format.Date(tes,"%d/%m/%Y")
         return(tes)
     }
     
@@ -201,7 +201,7 @@ server <- function(input, output,session) {
             rowwise() %>% 
             mutate(tanggal_transaksi = gsub("\\/","-",tanggal_transaksi),
                    tanggal_transaksi = as.Date(tanggal_transaksi,"%d-%m-%Y"),
-                   tanggal_transaksi = format(tanggal_transaksi,"%d/%m/%Y"),
+                   tanggal_transaksi = format.Date(tanggal_transaksi,"%d/%m/%Y"),
                    submission_date = extract_tanggal(submission_date)) %>%
             ungroup() %>% 
             separate(projek_sub_projek,
@@ -388,7 +388,8 @@ server <- function(input, output,session) {
         
         data_final = 
             data %>% 
-            mutate(submission_date = lubridate::date(submission_date)) %>% 
+            mutate(submission_date = lubridate::date(submission_date),
+                   submission_date = format.Date(submission_date,"%d/%m/%Y")) %>% 
             separate(department_area_nama,
                      into = c("department","area","nama"),
                      sep = ";") %>% 
@@ -399,8 +400,9 @@ server <- function(input, output,session) {
                      into = c("brand","project","materi"),
                      sep = ";") %>% 
             mutate(tanggal_kegiatan = gsub("\\/","-",tanggal_kegiatan),
-                   tanggal_kegiatan = as.Date(tanggal_kegiatan,"%m-%d-%Y"),
-                   tanggal_kegiatan = lubridate::date(tanggal_kegiatan)) %>% 
+                   tanggal_kegiatan = as.Date(tanggal_kegiatan,"%d-%m-%Y"),
+                   tanggal_kegiatan = lubridate::date(tanggal_kegiatan),
+                   tanggal_kegiatan = format.Date(tanggal_kegiatan,"%d/%m/%Y")) %>% 
             separate(jenis_channel_sub_channel_klasifikasi,
                      into = c("jenis_channel","sub_channel","klasifikasi_channel"),
                      sep = ";") %>% 
