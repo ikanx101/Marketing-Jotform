@@ -6,33 +6,29 @@ library(tidyr)
 
 rm(list=ls())
 
-data = read_excel("Contoh Data.xlsx") %>% janitor::clean_names()
+data = read_excel("AWARENESS_PROJECT_FORM_CPA_20222022-01-18_23_39_52.xlsx") %>% janitor::clean_names()
+
+
+# copy paste dari sini
 
 data_final = 
   data %>% 
-  mutate(submission_date = lubridate::date(submission_date),
-         submission_date = format.Date(submission_date,"%d/%m/%Y")) %>% 
-  separate(department_area_nama,
-           into = c("department","area","nama"),
-           sep = ";") %>% 
-  separate(provinsi_kota_kab,
-           into = c("provinsi","kota_kab"),
+  mutate(submission_date = as.Date(submission_date,"%Y-%m-%d"),
+         tanggal_kegiatan = as.Date(tanggal_kegiatan,"%m/%d/%Y")) %>% 
+  separate(dept_provinsi_kota_kab_kecamatan,
+           into = c("department","provinsi","kota_kab","kecamatan"),
            sep = ";") %>% 
   separate(brand_projek_materi,
            into = c("brand","project","materi"),
            sep = ";") %>% 
-  mutate(tanggal_kegiatan = gsub("\\/","-",tanggal_kegiatan),
-         tanggal_kegiatan = as.Date(tanggal_kegiatan,"%d-%m-%Y"),
-         tanggal_kegiatan = lubridate::date(tanggal_kegiatan),
-         tanggal_kegiatan = format.Date(tanggal_kegiatan,"%d/%m/%Y")) %>% 
   separate(jenis_channel_sub_channel_klasifikasi,
            into = c("jenis_channel","sub_channel","klasifikasi_channel"),
            sep = ";") %>% 
   separate(kanal_platform_lokasi_room,
            into = c("kanal","platform","lokasi_room"),
            sep = ";") %>% 
+  rename(nama = nama_spg_mr) %>% 
   mutate(department = trimws(department),
-         area = trimws(area),
          nama = trimws(nama),
          brand = trimws(brand),
          project = trimws(project),
@@ -44,7 +40,8 @@ data_final =
          platform = trimws(platform),
          lokasi_room = trimws(lokasi_room),
          provinsi = trimws(provinsi),
-         kota_kab = trimws(kota_kab))
+         kota_kab = trimws(kota_kab),
+         kecamatan = trimws(kecamatan))
 
 tes = colnames(data_final)
 tes = gsub("\\_"," ",tes)

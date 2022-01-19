@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("cc", "xx"), # mandatory
-    password = c("cc", "xx"), # mandatory
+    user = c("vv", "xx"), # mandatory
+    password = c("vv", "xx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -62,7 +62,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 19 Januari 2022 08:08 WIB"),
+                                h3("update 19 Januari 2022 13:40 WIB"),
                                 h4("Apa yang berubah?"),
                                 h5("Penyesuaian form baru 2022"),
                                 h5("copyright 2022"),
@@ -117,7 +117,7 @@ converter_2 = tabItem(tabName = 'awareness',
 body = dashboardBody(tabItems(filterpane,converter,converter_2))
 
 # ui all
-ui = secure_app(dashboardPage(skin = "green",header,sidebar,body))
+ui = secure_app(dashboardPage(skin = "black",header,sidebar,body))
 
 # server part
 server <- function(input, output,session) {
@@ -133,10 +133,10 @@ server <- function(input, output,session) {
     extract_tanggal = function(tes){
         tes = unlist(strsplit(tes,split = " "))
         tes = tes[1]
-        tes = lubridate::date(tes)
-        tes = format.Date(tes,"%d/%m/%Y")
+        tes = as.Date(tes,"%Y-%m-%d")
         return(tes)
     }
+    
     
     # extract longitude
     extract_long = function(tes){
@@ -199,7 +199,6 @@ server <- function(input, output,session) {
             data %>% 
             rowwise() %>% 
             mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%m/%d/%Y"),
-                   tanggal_transaksi = format.Date(tanggal_transaksi,"%d/%m/%Y"),
                    submission_date = extract_tanggal(submission_date)) %>%
             ungroup() %>% 
             separate(projek_sub_projek,
@@ -385,29 +384,22 @@ server <- function(input, output,session) {
         
         data_final = 
             data %>% 
-            mutate(submission_date = lubridate::date(submission_date),
-                   submission_date = format.Date(submission_date,"%d/%m/%Y")) %>% 
-            separate(department_area_nama,
-                     into = c("department","area","nama"),
-                     sep = ";") %>% 
-            separate(provinsi_kota_kab,
-                     into = c("provinsi","kota_kab"),
+            mutate(submission_date = as.Date(submission_date,"%Y-%m-%d"),
+                   tanggal_kegiatan = as.Date(tanggal_kegiatan,"%m/%d/%Y")) %>% 
+            separate(dept_provinsi_kota_kab_kecamatan,
+                     into = c("department","provinsi","kota_kab","kecamatan"),
                      sep = ";") %>% 
             separate(brand_projek_materi,
                      into = c("brand","project","materi"),
                      sep = ";") %>% 
-            mutate(tanggal_kegiatan = gsub("\\/","-",tanggal_kegiatan),
-                   tanggal_kegiatan = as.Date(tanggal_kegiatan,"%d-%m-%Y"),
-                   tanggal_kegiatan = lubridate::date(tanggal_kegiatan),
-                   tanggal_kegiatan = format.Date(tanggal_kegiatan,"%d/%m/%Y")) %>% 
             separate(jenis_channel_sub_channel_klasifikasi,
                      into = c("jenis_channel","sub_channel","klasifikasi_channel"),
                      sep = ";") %>% 
             separate(kanal_platform_lokasi_room,
                      into = c("kanal","platform","lokasi_room"),
                      sep = ";") %>% 
+            rename(nama = nama_spg_mr) %>% 
             mutate(department = trimws(department),
-                   area = trimws(area),
                    nama = trimws(nama),
                    brand = trimws(brand),
                    project = trimws(project),
@@ -419,10 +411,15 @@ server <- function(input, output,session) {
                    platform = trimws(platform),
                    lokasi_room = trimws(lokasi_room),
                    provinsi = trimws(provinsi),
-                   kota_kab = trimws(kota_kab))
+                   kota_kab = trimws(kota_kab),
+                   kecamatan = trimws(kecamatan))
         
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
+        
+        proper <- function(x){
+            stringi::stri_trans_general(x,id = "Title")
+        }
         
         colnames(data_final) = proper(tes)
         
