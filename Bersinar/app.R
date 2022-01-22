@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("vv", "xx"), # mandatory
-    password = c("vv", "xx"), # mandatory
+    user = c("xx", "xx"), # mandatory
+    password = c("xx", "xx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -62,9 +62,9 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 19 Januari 2022 13:40 WIB"),
+                                h3("update 22 Januari 2022 10:36 WIB"),
                                 h4("Apa yang berubah?"),
-                                h5("Penyesuaian form baru 2022"),
+                                h5("Fix Tanggal"),
                                 h5("copyright 2022"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -198,7 +198,7 @@ server <- function(input, output,session) {
         data = 
             data %>% 
             rowwise() %>% 
-            mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%m/%d/%Y"),
+            mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%d/%m/%Y"),
                    submission_date = extract_tanggal(submission_date)) %>%
             ungroup() %>% 
             separate(projek_sub_projek,
@@ -385,7 +385,7 @@ server <- function(input, output,session) {
         data_final = 
             data %>% 
             mutate(submission_date = as.Date(submission_date,"%Y-%m-%d"),
-                   tanggal_kegiatan = as.Date(tanggal_kegiatan,"%m/%d/%Y")) %>% 
+                   tanggal_kegiatan = as.Date(tanggal_kegiatan,"%d/%m/%Y")) %>% 
             separate(dept_provinsi_kota_kab_kecamatan,
                      into = c("department","provinsi","kota_kab","kecamatan"),
                      sep = ";") %>% 

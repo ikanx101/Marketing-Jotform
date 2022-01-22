@@ -50,7 +50,7 @@ extract_lat = function(tes){
 
 # ambil data
 data = 
-  read_excel("SALES_PROJECT_FORM_CPE_20222022-01-17_21_42_02.xlsx") %>% 
+  read_excel("SALES_PROJECT_FORM_CPC_20222022-01-21_22_17_52.xlsx") %>% 
   janitor::clean_names()
 
 
@@ -68,7 +68,7 @@ for(i in 1:nrow(data)){
 data = 
   data %>% 
   rowwise() %>% 
-  mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%m/%d/%Y"),
+  mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%d/%m/%Y"),
          submission_date = extract_tanggal(submission_date)) %>%
   ungroup() %>% 
   separate(projek_sub_projek,
@@ -151,72 +151,4 @@ proper <- function(x){
 
 colnames(data_final) = proper(tes)
 colnames(data_final)[colnames(data_final) == "Produk"] = "SKU"
-openxlsx::write.xlsx(data_final,"hasil v8.xlsx",overwrite = T)
-
-
-# =========================================================================
-# =========================================================================
-# =========================================================================
-
-library(ggplot2)
-library(leaflet)
-library(ggalluvial)
-
-new_data = 
-  data_final %>% 
-  filter(!is.na(Longitude)) %>% 
-  distinct() %>% 
-  mutate(label = paste0(stringi::stri_trans_general(`Nama Tempat Customer`,id = "Title"),
-                        "<br/>Telp ",`Nomor Telepon`),
-         `Total Value` = ifelse(is.na(`Total Value`),0,`Total Value`)) %>% 
-  group_by(label,Longitude,Latitude,`Nomor Telepon`) %>% 
-  summarise(omset = sum(`Total Value`)) %>% 
-  ungroup() %>% 
-  mutate(label = paste0(label,"<br/>Total Value: Rp",omset))
-
-leaflet() %>% addTiles() %>% addCircles(new_data$Longitude,
-                                        new_data$Latitude,
-                                        popup = new_data$label,
-                                        radius = 10)
-
-data_final %>% 
-  mutate(`Nama Tempat Customer` = tolower(`Nama Tempat Customer`)) %>% 
-  group_by(Nama,`Tanggal Transaksi`) %>% 
-  summarise(Freq = length(`Nama Tempat Customer`)) %>% 
-  ungroup() %>% 
-  filter(!is.na(`Tanggal Transaksi`)) %>% 
-  ggplot() +
-  geom_tile(aes(x = `Tanggal Transaksi`,
-                y = Nama,
-                fill = Freq)) +
-  scale_fill_gradient(low = "darkred",high = "steelblue") +
-  theme_minimal() +
-  labs(title = "Kalender Kunjungan",
-       fill = "Banyak Toko Dikunjungi",
-       subtitle = "Semua Data yang Diupload",
-       caption = "Visualized using R\nikanx101.com") +
-  theme(legend.position = "bottom")
-
-data_final %>% 
-  select(Nama,`Tanggal Transaksi`,`Nama Tempat Customer`,`Jenis Channel`,`Provinsi`,`Kota Kab`) %>% 
-  distinct() %>% 
-  group_by(`Provinsi`,`Kota Kab`,`Jenis Channel`) %>% 
-  summarise(freq = n()) %>% 
-  ungroup() %>% 
-  ggplot(aes(axis1 = `Provinsi`,
-             axis2 = `Kota Kab`,
-             axis3 = `Jenis Channel`,
-             y = freq)) +
-  scale_x_discrete(limits = c("Provinsi", "Kota Kab", "Jenis Channel"), expand = c(.2, .05)) +
-  geom_alluvium(color = "Black",
-                aes(fill = `Provinsi`)) +
-  geom_stratum() +
-  geom_text(stat = "stratum", 
-            aes(label = after_stat(stratum)),
-            size = 3) +
-  theme_minimal() +
-  labs(title = "Provinsi - Kota Kabupaten - Jenis Channel",
-       subtitle = "Semua Data yang Diupload",
-       caption = "Visualized using R\nikanx101.com",
-       y = "Banyak Customer") +
-  theme(legend.position = "none")
+openxlsx::write.xlsx(data_final,"hasil v9.xlsx",overwrite = T)

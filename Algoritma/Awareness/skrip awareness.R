@@ -6,7 +6,7 @@ library(tidyr)
 
 rm(list=ls())
 
-data = read_excel("AWARENESS_PROJECT_FORM_CPA_20222022-01-18_23_39_52.xlsx") %>% janitor::clean_names()
+data = read_excel("AWARENESS_PROJECT_FORM_CPD_20222022-01-21_22_22_29.xlsx") %>% janitor::clean_names()
 
 
 # copy paste dari sini
@@ -14,7 +14,7 @@ data = read_excel("AWARENESS_PROJECT_FORM_CPA_20222022-01-18_23_39_52.xlsx") %>%
 data_final = 
   data %>% 
   mutate(submission_date = as.Date(submission_date,"%Y-%m-%d"),
-         tanggal_kegiatan = as.Date(tanggal_kegiatan,"%m/%d/%Y")) %>% 
+         tanggal_kegiatan = as.Date(tanggal_kegiatan,"%d/%m/%Y")) %>% 
   separate(dept_provinsi_kota_kab_kecamatan,
            into = c("department","provinsi","kota_kab","kecamatan"),
            sep = ";") %>% 
