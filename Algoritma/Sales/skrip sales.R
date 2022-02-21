@@ -143,10 +143,16 @@ for(i in 2:nrow(data_3)){
 
 data_3 = 
   data_3 %>% 
-  mutate(sumber_barang = paste0("sumber_",sumber_barang)) %>% 
-  spread(key = sumber_barang,value = darimana_asal_barang_yang_kamu_jual)
+  mutate(sumber_barang = case_when(
+    sumber_barang == 1 ~ "asal_barang",
+    sumber_barang == 2 ~ "nama_sumber",
+    sumber_barang == 3 ~ "jenis_marketplace"
+  )
+         ) %>% 
+  spread(key = sumber_barang,value = darimana_asal_barang_yang_kamu_jual) %>% 
+  relocate(nama_sumber,.before = jenis_marketplace)
 
-data_final = merge(data_final,data_3)
+data_final = merge(data_final,data_3) %>% select(-id)
 
 tes = colnames(data_final)
 tes = gsub("\\_"," ",tes)
@@ -157,4 +163,4 @@ proper <- function(x){
 
 colnames(data_final) = proper(tes)
 colnames(data_final)[colnames(data_final) == "Produk"] = "SKU"
-openxlsx::write.xlsx(data_final,"hasil v10.xlsx",overwrite = T)
+openxlsx::write.xlsx(data_final,"hasil v11.xlsx",overwrite = T)

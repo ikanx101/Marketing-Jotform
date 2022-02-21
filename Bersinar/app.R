@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("xx", "xx"), # mandatory
-    password = c("xx", "xx"), # mandatory
+    user = c("x", "xx"), # mandatory
+    password = c("x", "xx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -62,9 +62,9 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 22 Januari 2022 10:36 WIB"),
+                                h3("update 21 Februari 2022 11:54 WIB"),
                                 h4("Apa yang berubah?"),
-                                h5("Fix Tanggal"),
+                                h5("Update converter untuk form sales"),
                                 h5("copyright 2022"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -117,7 +117,7 @@ converter_2 = tabItem(tabName = 'awareness',
 body = dashboardBody(tabItems(filterpane,converter,converter_2))
 
 # ui all
-ui = secure_app(dashboardPage(skin = "black",header,sidebar,body))
+ui = secure_app(dashboardPage(skin = "green",header,sidebar,body))
 
 # server part
 server <- function(input, output,session) {
@@ -198,31 +198,24 @@ server <- function(input, output,session) {
         data = 
             data %>% 
             rowwise() %>% 
-            mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%d/%m/%Y"),
+            mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%B %d, %Y"),
                    submission_date = extract_tanggal(submission_date)) %>%
             ungroup() %>% 
-            separate(projek_sub_projek,
-                     into = c("projek","sub_projek"),
-                     sep = ";") %>% 
-            separate(sumber_barang_intermediaries_name,
-                     into = c("sumber_barang","intermediaries_name"),
-                     sep = ";") %>% 
             separate(dept_provinsi_kota_kab_kecamatan,
                      into = c("department","provinsi","kota_kab","kecamatan"),
                      sep = ";") %>% 
-            separate(jenis_channel_sub_channel_klasifikasi,
-                     into = c("jenis_channel","sub_channel","klasifikasi"),
+            separate(projek,
+                     into = c("projek","sub_projek"),
                      sep = ";") %>% 
-            mutate(department = trimws(department),
-                   jenis_channel = trimws(jenis_channel),
-                   sub_channel = trimws(sub_channel),
-                   provinsi = trimws(provinsi),
-                   kota_kab = trimws(kota_kab),
-                   kecamatan = trimws(kecamatan),
-                   location_coordinate = NULL
-            ) %>% 
+            separate(channel,
+                     into = c("channel","klasifikasi"),
+                     sep = ";") %>% 
+            separate_rows(darimana_asal_barang_yang_kamu_jual,
+                          sep = ";") %>% 
+            mutate(location_coordinate = NULL) %>% 
             mutate(klasifikasi = stringr::str_trim(klasifikasi)) %>% 
-            rename(nama = nama_spg_mr)
+            rename(nama = nama_spg_mr) %>% 
+            mutate_if(is.character,trimws)
         
         # penjualan products
         judul = colnames(data)
@@ -231,7 +224,8 @@ server <- function(input, output,session) {
         
         # pecah data
         data_1 = data %>% select(id,penjualan)
-        data_2 = data %>% select(-penjualan)
+        data_2 = data %>% select(-penjualan) %>% select(-darimana_asal_barang_yang_kamu_jual) %>% distinct()
+        data_3 = data %>% select(id,darimana_asal_barang_yang_kamu_jual) %>% distinct()
         
         # data_1
         # pecah produk penjualan
@@ -266,11 +260,28 @@ server <- function(input, output,session) {
         data_final = 
             merge(data_2,data_all,all = T) %>% 
             arrange(id,brand) %>% 
-            distinct() %>% 
-            select(-id) %>% 
-            relocate(latitude,.before = ada_platform_online) %>% 
-            relocate(longitude,.before = latitude)
+            distinct() 
         
+        # data 3
+        data_3$sumber_barang = 1
+        for(i in 2:nrow(data_3)){
+            data_3$sumber_barang[i] = ifelse(data_3$id[i] == data_3$id[i-1],
+                                             data_3$sumber_barang[i-1] + 1,
+                                             1)
+        }
+        
+        data_3 = 
+            data_3 %>% 
+            mutate(sumber_barang = case_when(
+                sumber_barang == 1 ~ "asal_barang",
+                sumber_barang == 2 ~ "nama_sumber",
+                sumber_barang == 3 ~ "jenis_marketplace"
+            )
+            ) %>% 
+            spread(key = sumber_barang,value = darimana_asal_barang_yang_kamu_jual) %>% 
+            relocate(nama_sumber,.before = jenis_marketplace)
+        
+        data_final = merge(data_final,data_3) %>% select(-id)
         
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
