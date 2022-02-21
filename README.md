@@ -1,5 +1,5 @@
 # Marketing-Jotform
 
-Repository ini berisi _shiny_ versi serius dari __Jotform__ _converter_ tim marketing area @nutrifood.
+Repository ini berisi _script shiny_ untuk __Jotform__ _converter_ tim _Area Marketing_.
 
 Dibuat oleh: [Ikang Fadhli](https://ikanx101.com/)
