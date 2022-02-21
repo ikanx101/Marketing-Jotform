@@ -6,6 +6,7 @@ library(dplyr)
 library(tidytext)
 library(janitor)
 library(tidyr)
+library(reshape2)
 
 # bikin function dulu
 # extract tanggal
@@ -50,7 +51,7 @@ extract_lat = function(tes){
 
 # ambil data
 data = 
-  read_excel("SALES_PROJECT_FORM_CPC_20222022-01-21_22_17_52.xlsx") %>% 
+  read_excel("new.xlsx") %>% 
   janitor::clean_names()
 
 
@@ -68,31 +69,24 @@ for(i in 1:nrow(data)){
 data = 
   data %>% 
   rowwise() %>% 
-  mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%d/%m/%Y"),
+  mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%B %d, %Y"),
          submission_date = extract_tanggal(submission_date)) %>%
   ungroup() %>% 
-  separate(projek_sub_projek,
-           into = c("projek","sub_projek"),
-           sep = ";") %>% 
-  separate(sumber_barang_intermediaries_name,
-           into = c("sumber_barang","intermediaries_name"),
-           sep = ";") %>% 
   separate(dept_provinsi_kota_kab_kecamatan,
            into = c("department","provinsi","kota_kab","kecamatan"),
            sep = ";") %>% 
-  separate(jenis_channel_sub_channel_klasifikasi,
-           into = c("jenis_channel","sub_channel","klasifikasi"),
+  separate(projek,
+           into = c("projek","sub_projek"),
            sep = ";") %>% 
-  mutate(department = trimws(department),
-         jenis_channel = trimws(jenis_channel),
-         sub_channel = trimws(sub_channel),
-         provinsi = trimws(provinsi),
-         kota_kab = trimws(kota_kab),
-         kecamatan = trimws(kecamatan),
-         location_coordinate = NULL
-         ) %>% 
+  separate(channel,
+           into = c("channel","klasifikasi"),
+           sep = ";") %>% 
+  separate_rows(darimana_asal_barang_yang_kamu_jual,
+           sep = ";") %>% 
+  mutate(location_coordinate = NULL) %>% 
   mutate(klasifikasi = stringr::str_trim(klasifikasi)) %>% 
-  rename(nama = nama_spg_mr)
+  rename(nama = nama_spg_mr) %>% 
+  mutate_if(is.character,trimws)
 
 # penjualan products
 judul = colnames(data)
@@ -101,7 +95,8 @@ colnames(data) = judul
 
 # pecah data
 data_1 = data %>% select(id,penjualan)
-data_2 = data %>% select(-penjualan)
+data_2 = data %>% select(-penjualan) %>% select(-darimana_asal_barang_yang_kamu_jual) %>% distinct()
+data_3 = data %>% select(id,darimana_asal_barang_yang_kamu_jual) %>% distinct()
 
 # data_1
 # pecah produk penjualan
@@ -136,11 +131,22 @@ data_all =
 data_final = 
   merge(data_2,data_all,all = T) %>% 
   arrange(id,brand) %>% 
-  distinct() %>% 
-  select(-id) %>% 
-  relocate(latitude,.before = ada_platform_online) %>% 
-  relocate(longitude,.before = latitude)
-  
+  distinct() 
+
+# data 3
+data_3$sumber_barang = 1
+for(i in 2:nrow(data_3)){
+  data_3$sumber_barang[i] = ifelse(data_3$id[i] == data_3$id[i-1],
+                                   data_3$sumber_barang[i-1] + 1,
+                                   1)
+}
+
+data_3 = 
+  data_3 %>% 
+  mutate(sumber_barang = paste0("sumber_",sumber_barang)) %>% 
+  spread(key = sumber_barang,value = darimana_asal_barang_yang_kamu_jual)
+
+data_final = merge(data_final,data_3)
 
 tes = colnames(data_final)
 tes = gsub("\\_"," ",tes)
@@ -151,4 +157,4 @@ proper <- function(x){
 
 colnames(data_final) = proper(tes)
 colnames(data_final)[colnames(data_final) == "Produk"] = "SKU"
-openxlsx::write.xlsx(data_final,"hasil v9.xlsx",overwrite = T)
+openxlsx::write.xlsx(data_final,"hasil v10.xlsx",overwrite = T)
