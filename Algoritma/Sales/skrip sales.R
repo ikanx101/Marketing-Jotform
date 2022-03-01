@@ -51,7 +51,7 @@ extract_lat = function(tes){
 
 # ambil data
 data = 
-  read_excel("new.xlsx") %>% 
+  read_excel("SALES_PROJECT_FORM_CPB_20222022-02-28_22_23_36.xlsx") %>% 
   janitor::clean_names()
 
 
@@ -75,13 +75,13 @@ data =
   separate(dept_provinsi_kota_kab_kecamatan,
            into = c("department","provinsi","kota_kab","kecamatan"),
            sep = ";") %>% 
-  separate(projek,
+  separate(projek_sub_projek,
            into = c("projek","sub_projek"),
            sep = ";") %>% 
-  separate(channel,
-           into = c("channel","klasifikasi"),
+  separate(jenis_channel_sub_channel_klasifikasi,
+           into = c("jenis_channel","sub_channel","klasifikasi"),
            sep = ";") %>% 
-  separate_rows(darimana_asal_barang_yang_kamu_jual,
+  separate_rows(sumber_barang_intermediaries_name,
            sep = ";") %>% 
   mutate(location_coordinate = NULL) %>% 
   mutate(klasifikasi = stringr::str_trim(klasifikasi)) %>% 
@@ -95,8 +95,8 @@ colnames(data) = judul
 
 # pecah data
 data_1 = data %>% select(id,penjualan)
-data_2 = data %>% select(-penjualan) %>% select(-darimana_asal_barang_yang_kamu_jual) %>% distinct()
-data_3 = data %>% select(id,darimana_asal_barang_yang_kamu_jual) %>% distinct()
+data_2 = data %>% select(-penjualan) %>% select(-sumber_barang_intermediaries_name) %>% distinct()
+data_3 = data %>% select(id,sumber_barang_intermediaries_name) %>% distinct()
 
 # data_1
 # pecah produk penjualan
@@ -149,7 +149,7 @@ data_3 =
     sumber_barang == 3 ~ "jenis_marketplace"
   )
          ) %>% 
-  spread(key = sumber_barang,value = darimana_asal_barang_yang_kamu_jual) %>% 
+  spread(key = sumber_barang,value = sumber_barang_intermediaries_name) %>% 
   relocate(nama_sumber,.before = jenis_marketplace)
 
 data_final = merge(data_final,data_3) %>% select(-id)
@@ -163,4 +163,4 @@ proper <- function(x){
 
 colnames(data_final) = proper(tes)
 colnames(data_final)[colnames(data_final) == "Produk"] = "SKU"
-openxlsx::write.xlsx(data_final,"hasil v11.xlsx",overwrite = T)
+openxlsx::write.xlsx(data_final,"hasil v12.xlsx",overwrite = T)
