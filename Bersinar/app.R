@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("x", "xx"), # mandatory
-    password = c("x", "xx"), # mandatory
+    user = c("aa", "xx"), # mandatory
+    password = c("aa", "xx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -62,7 +62,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 21 Februari 2022 11:54 WIB"),
+                                h3("update 1 Maret 2022 09:08 WIB"),
                                 h4("Apa yang berubah?"),
                                 h5("Update converter untuk form sales"),
                                 h5("copyright 2022"),
