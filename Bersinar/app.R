@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("aa", "xx"), # mandatory
-    password = c("aa", "xx"), # mandatory
+    user = c("xx", "xx"), # mandatory
+    password = c("xx", "xx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -62,9 +62,9 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 1 Maret 2022 09:08 WIB"),
+                                h3("update 1 Maret 2022 10:43 WIB"),
                                 h4("Apa yang berubah?"),
-                                h5("Update converter untuk form sales"),
+                                h5("Sudah menggunakan data real, bukan data pilot lagi."),
                                 h5("copyright 2022"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -204,13 +204,13 @@ server <- function(input, output,session) {
             separate(dept_provinsi_kota_kab_kecamatan,
                      into = c("department","provinsi","kota_kab","kecamatan"),
                      sep = ";") %>% 
-            separate(projek,
+            separate(projek_sub_projek,
                      into = c("projek","sub_projek"),
                      sep = ";") %>% 
-            separate(channel,
-                     into = c("channel","klasifikasi"),
+            separate(jenis_channel_sub_channel_klasifikasi,
+                     into = c("jenis_channel","sub_channel","klasifikasi"),
                      sep = ";") %>% 
-            separate_rows(darimana_asal_barang_yang_kamu_jual,
+            separate_rows(sumber_barang_intermediaries_name,
                           sep = ";") %>% 
             mutate(location_coordinate = NULL) %>% 
             mutate(klasifikasi = stringr::str_trim(klasifikasi)) %>% 
@@ -224,8 +224,8 @@ server <- function(input, output,session) {
         
         # pecah data
         data_1 = data %>% select(id,penjualan)
-        data_2 = data %>% select(-penjualan) %>% select(-darimana_asal_barang_yang_kamu_jual) %>% distinct()
-        data_3 = data %>% select(id,darimana_asal_barang_yang_kamu_jual) %>% distinct()
+        data_2 = data %>% select(-penjualan) %>% select(-sumber_barang_intermediaries_name) %>% distinct()
+        data_3 = data %>% select(id,sumber_barang_intermediaries_name) %>% distinct()
         
         # data_1
         # pecah produk penjualan
@@ -278,7 +278,7 @@ server <- function(input, output,session) {
                 sumber_barang == 3 ~ "jenis_marketplace"
             )
             ) %>% 
-            spread(key = sumber_barang,value = darimana_asal_barang_yang_kamu_jual) %>% 
+            spread(key = sumber_barang,value = sumber_barang_intermediaries_name) %>% 
             relocate(nama_sumber,.before = jenis_marketplace)
         
         data_final = merge(data_final,data_3) %>% select(-id)
