@@ -49,9 +49,12 @@ extract_lat = function(tes){
   return(tes)
 }
 
+# nama file
+nama_file = "cpa.xlsx"
+
 # ambil data
 data = 
-  read_excel("SALES_PROJECT_FORM_CPB_20222022-02-28_22_23_36.xlsx") %>% 
+  read_excel(nama_file) %>% 
   janitor::clean_names()
 
 
@@ -66,10 +69,11 @@ for(i in 1:nrow(data)){
   data$latitude[i] = extract_lat(data$location_coordinate[i])
 }
 
+# mulai asiknya di sini
 data = 
   data %>% 
   rowwise() %>% 
-  mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%B %d, %Y"),
+  mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%d/%m/%Y"),
          submission_date = extract_tanggal(submission_date)) %>%
   ungroup() %>% 
   separate(dept_provinsi_kota_kab_kecamatan,
@@ -149,10 +153,28 @@ data_3 =
     sumber_barang == 3 ~ "jenis_marketplace"
   )
          ) %>% 
-  spread(key = sumber_barang,value = sumber_barang_intermediaries_name) %>% 
-  relocate(nama_sumber,.before = jenis_marketplace)
+  spread(key = sumber_barang,value = sumber_barang_intermediaries_name)
 
+# ini kita harus cek dulu apakah "jenis_marketplace" itu ada atau gak?
+cek_nama = colnames(data_3)
+cek_final = cek_nama[cek_nama == "jenis_marketplace"] %>% rlang::is_empty()
+
+# seandainya gak ada "jenis_marketplace"
+if(cek_final){
+  data_3 = 
+    data_3 %>% 
+    mutate(jenis_marketplace = NA) %>% 
+    relocate(nama_sumber,.before = jenis_marketplace)
+}
+
+# kita gabung finalnya
 data_final = merge(data_final,data_3) %>% select(-id)
+
+# tentang nomor invoice
+data_final = 
+  data_final %>% 
+  relocate(nomor_order_invoice,.before = asal_barang)
+
 
 tes = colnames(data_final)
 tes = gsub("\\_"," ",tes)
@@ -163,4 +185,8 @@ proper <- function(x){
 
 colnames(data_final) = proper(tes)
 colnames(data_final)[colnames(data_final) == "Produk"] = "SKU"
-openxlsx::write.xlsx(data_final,"hasil v12.xlsx",overwrite = T)
+
+# copaste berakhir sampe sini
+
+# ===========================================================
+openxlsx::write.xlsx(data_final,"hasil cpa.xlsx",overwrite = T)

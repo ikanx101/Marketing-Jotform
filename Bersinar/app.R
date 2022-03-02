@@ -25,8 +25,8 @@ rm(list=ls())
 
 # buat credential
 credentials = data.frame(
-    user = c("xx", "xx"), # mandatory
-    password = c("xx", "xx"), # mandatory
+    user = c("aa", "xx"), # mandatory
+    password = c("aa", "xx"), # mandatory
     admin = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -62,9 +62,9 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h3("update 1 Maret 2022 10:43 WIB"),
+                                h2("update 2 Maret 2022 10:36 WIB"),
                                 h4("Apa yang berubah?"),
-                                h5("Sudah menggunakan data real, bukan data pilot lagi."),
+                                h5("Urutan kolom."),
                                 h5("copyright 2022"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -117,7 +117,7 @@ converter_2 = tabItem(tabName = 'awareness',
 body = dashboardBody(tabItems(filterpane,converter,converter_2))
 
 # ui all
-ui = secure_app(dashboardPage(skin = "green",header,sidebar,body))
+ui = secure_app(dashboardPage(skin = "black",header,sidebar,body))
 
 # server part
 server <- function(input, output,session) {
@@ -195,10 +195,11 @@ server <- function(input, output,session) {
             data$latitude[i] = extract_lat(data$location_coordinate[i])
         }
         
+        # mulai asiknya di sini
         data = 
             data %>% 
             rowwise() %>% 
-            mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%B %d, %Y"),
+            mutate(tanggal_transaksi = as.Date(tanggal_transaksi,"%d/%m/%Y"),
                    submission_date = extract_tanggal(submission_date)) %>%
             ungroup() %>% 
             separate(dept_provinsi_kota_kab_kecamatan,
@@ -278,10 +279,28 @@ server <- function(input, output,session) {
                 sumber_barang == 3 ~ "jenis_marketplace"
             )
             ) %>% 
-            spread(key = sumber_barang,value = sumber_barang_intermediaries_name) %>% 
-            relocate(nama_sumber,.before = jenis_marketplace)
+            spread(key = sumber_barang,value = sumber_barang_intermediaries_name)
         
+        # ini kita harus cek dulu apakah "jenis_marketplace" itu ada atau gak?
+        cek_nama = colnames(data_3)
+        cek_final = cek_nama[cek_nama == "jenis_marketplace"] %>% rlang::is_empty()
+        
+        # seandainya gak ada "jenis_marketplace"
+        if(cek_final){
+            data_3 = 
+                data_3 %>% 
+                mutate(jenis_marketplace = NA) %>% 
+                relocate(nama_sumber,.before = jenis_marketplace)
+        }
+        
+        # kita gabung finalnya
         data_final = merge(data_final,data_3) %>% select(-id)
+        
+        # tentang nomor invoice
+        data_final = 
+            data_final %>% 
+            relocate(nomor_order_invoice,.before = asal_barang)
+        
         
         tes = colnames(data_final)
         tes = gsub("\\_"," ",tes)
