@@ -1,4 +1,4 @@
-setwd("~/Marketing-Jotform/Algoritma/2022/Sales")
+setwd("/cloud/project/Algoritma/2022/Sales")
 
 # bebersih global environment
 rm(list=ls())
@@ -27,6 +27,13 @@ tanggal_trans_func = function(tgl){
   tgl = tgl %>% as.Date(format = "%d-%m-%Y")
   return(tgl)
 }
+
+# fungsi untuk bikin judul proper
+proper_new = function(x){
+  tess = stringi::stri_trans_general(x,id = "Title")
+  gsub("\\_"," ",tess)
+}
+
 
 # memanggil dataset baru
 data = 
@@ -140,6 +147,23 @@ data_4 =
   ungroup()
 
 # kita kumpulin dulu data_1, data_2, data_3
-data_kumpul = merge(data_1,data_2) %>% merge(data_3) %>% merge(data_4)
+data_kumpul = 
+  merge(data_1,data_2) %>% 
+  merge(data_3) %>% 
+  merge(data_4) %>% 
+  rowwise() %>% 
+  mutate(nomor_telepon = gsub("+62","0",nomor_telepon,fixed = T),
+         nomor_telepon = substr(nomor_telepon,
+                                2,
+                                stringr::str_length(nomor_telepon)),
+         nomor_telepon = paste0("62",nomor_telepon)
+         ) %>% 
+  ungroup()
 
-openxlsx::write.xlsx(data_kumpul,file = "draft.xlsx")
+colnames(data_kumpul) = proper_new(colnames(data_kumpul))
+
+openxlsx::write.xlsx(data_kumpul,file = "draft_2.xlsx")
+
+
+
+
