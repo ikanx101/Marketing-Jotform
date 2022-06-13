@@ -433,7 +433,7 @@ server <- function(input, output,session) {
       
       # function untuk tanggal transaksi
       tanggal_trans_func = function(tgl){
-        tgl = tgl %>% as.Date(format = "%d-%m-%Y")
+        tgl = tgl %>% as.Date(format = "%B %d, %Y") # perubahan tanggal transaksi terbaru d sini
         return(tgl)
       }
       
