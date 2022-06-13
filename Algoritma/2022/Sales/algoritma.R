@@ -24,7 +24,7 @@ tanggal_submisi_func = function(tgl){
 
 # function untuk tanggal transaksi
 tanggal_trans_func = function(tgl){
-  tgl = tgl %>% as.Date(format = "%d-%m-%Y")
+  tgl = tgl %>% as.Date(format = "%B %d, %Y") # perubahan tanggal transaksi terbaru d sini
   return(tgl)
 }
 
@@ -37,7 +37,7 @@ proper_new = function(x){
 
 # memanggil dataset baru
 data = 
-  read_excel("Contoh Tarikan Trial_New_Jotform_Sales_Q2.xlsx") %>% 
+  read_excel("testing.xlsx") %>% 
   janitor::clean_names() %>% 
   rowwise() %>% 
   mutate(submission_date = tanggal_submisi_func(submission_date),
@@ -118,7 +118,7 @@ data_4 =
   data %>% 
   select(id,penjualan) %>% 
   separate_rows(penjualan,
-                sep = "\r\n") %>% 
+                sep = "\n") %>%  # ini perubahan terbaru ya
   filter(!grepl("total",penjualan,ignore.case = T)) %>% 
   separate(penjualan,
            into = c("item","dummy"),

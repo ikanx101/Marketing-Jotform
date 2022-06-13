@@ -85,7 +85,7 @@ converter = tabItem(tabName = 'converter_1',
                     )
 
 
-# tab Converter Awareness
+# tab Converter Awareness pre historic
 awareness = tabItem(tabName = 'awareness',
                     fluidRow(
                         column(width = 12,
@@ -100,7 +100,7 @@ awareness = tabItem(tabName = 'awareness',
                     )
               )
 
-# tab Converter Sales pre historic
+# tab Converter Sales 2022 TERBARU!!!
 converter_2 = tabItem(tabName = 'converter_2',
                     fluidRow(
                       column(width = 12,
@@ -405,6 +405,7 @@ server <- function(input, output,session) {
     
     # =============================================================================
     # ini skrip untuk konverter yang baru
+    # 2022 style
     data_upload_3 = reactive({
       inFile <- input$target_upload_3
       if (is.null(inFile))
@@ -524,7 +525,7 @@ server <- function(input, output,session) {
         data %>% 
         select(id,penjualan) %>% 
         separate_rows(penjualan,
-                      sep = "\r\n") %>% 
+                      sep = "\n") %>% 
         filter(!grepl("total",penjualan,ignore.case = T)) %>% 
         separate(penjualan,
                  into = c("item","dummy"),
