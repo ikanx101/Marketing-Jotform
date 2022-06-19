@@ -1,4 +1,4 @@
-setwd("~/Marketing-Jotform/Algoritma/2022/Awareness")
+setwd("/cloud/project/Algoritma/2022/Awareness")
 
 library(readxl)
 library(dplyr)
@@ -38,7 +38,10 @@ data_final =
                                    "Tidak"),
          aktivasi_kantin = ifelse(grepl("kantin",kegiatan_di_sekolah,ignore.case = T),
                               "Ya",
-                              "Tidak")
+                              "Tidak"),
+         kegiatan_di_sekolah = gsub("Materi HSLP|Senam|Ranking 1|Cerita Challenge|Aktivasi Kantin","",kegiatan_di_sekolah,ignore.case = T),
+         kegiatan_di_sekolah = stringr::str_trim(kegiatan_di_sekolah),
+         lainnya = kegiatan_di_sekolah,
          )  %>% 
     select(-kegiatan_di_sekolah) %>% 
     mutate(kantin = ifelse(grepl("kantin",apakah_titik_sekolah_memiliki,ignore.case = T),
@@ -66,7 +69,8 @@ data_final =
            .after = chiller) %>% 
   relocate(participant,
            .after = apakah_kantin_menjual_minuman_serbuk_premium_nutrisari_hi_lo_mi_lo_dsb) %>% 
-  relocate(apakah_ada_penjualan,.after = participant)
+  relocate(apakah_ada_penjualan,.after = participant) %>% 
+  relocate(lainnya,.after = aktivasi_kantin)
 
 tes = colnames(data_final)
 tes = gsub("\\_"," ",tes)
@@ -76,3 +80,4 @@ proper <- function(x){
 }
 
 colnames(data_final) = proper(tes)
+write.xlsx(data_final,file = "output.xlsx")
