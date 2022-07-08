@@ -37,7 +37,7 @@ proper_new = function(x){
 
 # memanggil dataset baru
 data = 
-  read_excel("testing.xlsx") %>% 
+  read_excel("uji coba.xlsx") %>% 
   janitor::clean_names() %>% 
   rowwise() %>% 
   mutate(submission_date = tanggal_submisi_func(submission_date),
@@ -76,7 +76,7 @@ data_2 =
   data %>% 
   select(id,platform_online_merchant) %>% 
   separate_rows(platform_online_merchant,
-                sep = "\r\n") %>% 
+                sep = "\n") %>% 
   dcast(id ~ platform_online_merchant,
         length,
         value.var = "platform_online_merchant") %>% 
@@ -97,7 +97,7 @@ data_3 =
   data %>% 
   select(id,merchant_collaboration) %>% 
   separate_rows(merchant_collaboration,
-                sep = "\r\n") %>% 
+                sep = "\n") %>% 
   dcast(id ~ merchant_collaboration,
         length,
         value.var = "merchant_collaboration") %>% 
@@ -162,7 +162,7 @@ data_kumpul =
 
 colnames(data_kumpul) = proper_new(colnames(data_kumpul))
 
-openxlsx::write.xlsx(data_kumpul,file = "draft_2.xlsx")
+openxlsx::write.xlsx(data_kumpul,file = "draft_3.xlsx")
 
 
 

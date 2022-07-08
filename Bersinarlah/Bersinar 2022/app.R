@@ -30,7 +30,7 @@ credentials = data.frame(
 # USER INTERFACE
 
 # header
-header = dashboardHeader(title = "Jotform Converter AM 2022",
+header = dashboardHeader(title = "Jotform Converter AM v2.022",
                          titleWidth = 300)
 
 #sidebar menu
@@ -44,7 +44,10 @@ sidebar = dashboardSidebar(width = 300,
                                         text = 'Converter Sales Survey 2022',icon = icon('thumbs-o-up'),
                                         badgeLabel = "New!", badgeColor = "blue"),
                                menuItem(tabName = 'awareness',
-                                        text = 'Converter Awareness Survey',icon = icon('spinner'))
+                                        text = 'Converter Awareness Survey',icon = icon('spinner')),
+                               menuItem(tabName = 'aware_new',
+                                        text = 'Converter Awareness Survey 2022',icon = icon('thumbs-o-up'),
+                                        badgeLabel = "New!", badgeColor = "yellow")
                                     )
                            )
 
@@ -60,9 +63,9 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h2("update 31 May 2022 10:58 WIB"),
+                                h2("update 8 Juli 2022 13:30 WIB"),
                                 h4("Apa yang berubah?"),
-                                h5("Struktur baru form survey sales 2022."),
+                                h5("Sales baru."),
                                 h5("copyright 2022"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -116,11 +119,27 @@ converter_2 = tabItem(tabName = 'converter_2',
                           )
                       )
 
+# tab Converter Awareness pre historic
+awareness_2 = tabItem(tabName = 'aware_new',
+                    fluidRow(
+                      column(width = 12,
+                             h1('Converter Awareness Survey'),
+                             h3("Untuk form isian terbaru Juni 2022"),
+                             h4("Silakan upload file Anda:"),
+                             fileInput('target_upload_4', 'Pilih file',
+                                       accept = c('xlsx')
+                             ),
+                             br(),
+                             downloadButton("downloadData_4", "Download")
+                      )
+                    )
+)
+
 # body
-body = dashboardBody(tabItems(filterpane,converter,converter_2,awareness))
+body = dashboardBody(tabItems(filterpane,converter,converter_2,awareness,awareness_2))
 
 # ui all
-ui = secure_app(dashboardPage(skin = "green",header,sidebar,body))
+ui = secure_app(dashboardPage(skin = "red",header,sidebar,body))
 
 # server part
 server <- function(input, output,session) {
@@ -332,7 +351,7 @@ server <- function(input, output,session) {
     
     
     # =============================================================================
-    # converter awareness ya
+    # converter awareness lama
     data_upload_2 <- reactive({
         inFile <- input$target_upload_2
         if (is.null(inFile))
@@ -483,7 +502,7 @@ server <- function(input, output,session) {
         data %>% 
         select(id,platform_online_merchant) %>% 
         separate_rows(platform_online_merchant,
-                      sep = "\r\n") %>% 
+                      sep = "\n") %>% 
         dcast(id ~ platform_online_merchant,
               length,
               value.var = "platform_online_merchant") %>% 
@@ -504,7 +523,7 @@ server <- function(input, output,session) {
         data %>% 
         select(id,merchant_collaboration) %>% 
         separate_rows(merchant_collaboration,
-                      sep = "\r\n") %>% 
+                      sep = "\n") %>% 
         dcast(id ~ merchant_collaboration,
               length,
               value.var = "merchant_collaboration") %>% 
@@ -587,11 +606,112 @@ server <- function(input, output,session) {
     )
     
     
+    # ==================================================================================
+    # skrip converter awareness baru
+    # 2022 STYLE
+    # =============================================================================
+    # converter awareness lama
+    data_upload_4 <- reactive({
+      inFile <- input$target_upload_4
+      if (is.null(inFile))
+        return(NULL)
+      
+      # baca data
+      data <- read_excel(inFile$datapath) %>% 
+        janitor::clean_names() 
+      
+      # =================================
+      # mulai dari sini
+      
+      data_final = 
+        data %>% 
+        mutate(submission_date = as.Date(submission_date,"%Y-%m-%d"),
+               tanggal_kegiatan = as.Date(tanggal_kegiatan,"%B %d, %Y"),) %>% 
+        separate(dept_provinsi_kota_kab_kecamatan,
+                 into = c("dept","provinsi","kota_kab","kecamatan"),
+                 sep = ";") %>%
+        separate(projek_jenis_channel_sub_channel,
+                 into = c("projek","jenis_channel","sub_channel"),
+                 sep = ";") %>%  
+        separate(dimana_event_aktivasi_atau_meeting_dilaksanakan,
+                 into = c("jenis_event","platform","jenis_platform"),
+                 sep = ";") %>% 
+        mutate(materi_hslp = ifelse(grepl("hslp",kegiatan_di_sekolah,ignore.case = T),
+                                    "Ya",
+                                    "Tidak"),
+               senam = ifelse(grepl("senam",kegiatan_di_sekolah,ignore.case = T),
+                              "Ya",
+                              "Tidak"),
+               ranking_1 = ifelse(grepl("ranking",kegiatan_di_sekolah,ignore.case = T),
+                                  "Ya",
+                                  "Tidak"),
+               cerita_challenge = ifelse(grepl("cerita",kegiatan_di_sekolah,ignore.case = T),
+                                         "Ya",
+                                         "Tidak"),
+               aktivasi_kantin = ifelse(grepl("kantin",kegiatan_di_sekolah,ignore.case = T),
+                                        "Ya",
+                                        "Tidak"),
+               kegiatan_di_sekolah = gsub("Materi HSLP|Senam|Ranking 1|Cerita Challenge|Aktivasi Kantin","",kegiatan_di_sekolah,ignore.case = T),
+               kegiatan_di_sekolah = stringr::str_trim(kegiatan_di_sekolah),
+               lainnya = kegiatan_di_sekolah,
+        )  %>% 
+        select(-kegiatan_di_sekolah) %>% 
+        mutate(kantin = ifelse(grepl("kantin",apakah_titik_sekolah_memiliki,ignore.case = T),
+                               "Ya",
+                               "Tidak"),
+               chiller = ifelse(grepl("chiller",apakah_titik_sekolah_memiliki,ignore.case = T),
+                                "Ya",
+                                "Tidak")
+        ) %>% 
+        select(-apakah_titik_sekolah_memiliki) %>% 
+        mutate(
+          dept = trimws(dept),
+          projek = trimws(projek),
+          jenis_channel = trimws(jenis_channel),
+          sub_channel = trimws(sub_channel),
+          jenis_event = trimws(jenis_event),
+          platform = trimws(platform),
+          jenis_platform = trimws(jenis_platform),
+          provinsi = trimws(provinsi),
+          kota_kab = trimws(kota_kab),
+          kecamatan = trimws(kecamatan)) %>% 
+        mutate(bulan = lubridate::month(tanggal_kegiatan,label = T)) %>% 
+        relocate(bulan,.after = tanggal_kegiatan) %>% 
+        relocate(apakah_kantin_menjual_minuman_serbuk_premium_nutrisari_hi_lo_mi_lo_dsb,
+                 .after = chiller) %>% 
+        relocate(participant,
+                 .after = apakah_kantin_menjual_minuman_serbuk_premium_nutrisari_hi_lo_mi_lo_dsb) %>% 
+        relocate(apakah_ada_penjualan,.after = participant) %>% 
+        relocate(lainnya,.after = aktivasi_kantin)
+      
+      tes = colnames(data_final)
+      tes = gsub("\\_"," ",tes)
+      
+      proper <- function(x){
+        stringi::stri_trans_general(x,id = "Title")
+      }
+      
+      colnames(data_final) = proper(tes)
+      
+      # =================================
+      # akhir di sini
+      return(data_final)
+    })
+    
+    data_4 = data_upload_4
+    
+    output$downloadData_4 <- downloadHandler(
+      filename = function() {
+        paste("Awareness Survey Jotform ", Sys.time(), ".xlsx", sep="")
+      },
+      content = function(file) {
+        openxlsx::write.xlsx(data_4(), file)
+      }
+    )
+    
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
 
 # alhamdulillah selesai
-
-

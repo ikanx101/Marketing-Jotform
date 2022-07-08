@@ -6,8 +6,7 @@ library(tidyr)
 
 rm(list=ls())
 
-data = read_excel("testing.xlsx",
-                  sheet = "Tarikan Mentah") %>% janitor::clean_names()
+data = read_excel("uji coba.xlsx") %>% janitor::clean_names()
 
 # copy paste dari sini
 
