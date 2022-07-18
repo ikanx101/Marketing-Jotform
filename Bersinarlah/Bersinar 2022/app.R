@@ -63,9 +63,9 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h2("update 8 Juli 2022 13:30 WIB"),
+                                h2("update 18 Juli 2022 09:13 WIB"),
                                 h4("Apa yang berubah?"),
-                                h5("Sales baru."),
+                                h5("Mengakomodir error pada CPA."),
                                 h5("copyright 2022"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -501,12 +501,23 @@ server <- function(input, output,session) {
       data_2 = 
         data %>% 
         select(id,platform_online_merchant) %>% 
+        mutate(platform_online_merchant = ifelse(is.na(platform_online_merchant),
+                                                 "Tidak ada",
+                                                 platform_online_merchant)) %>% 
         separate_rows(platform_online_merchant,
                       sep = "\n") %>% 
         dcast(id ~ platform_online_merchant,
               length,
-              value.var = "platform_online_merchant") %>% 
-        select(-`NA`,-id)
+              value.var = "platform_online_merchant") 
+      
+      # jika tiada "Tidak ada"
+      if(is.null(data_2$`Tidak ada`)){data_2$`Tidak ada` = NA}
+      
+      # kita hapus dulu
+      data_2 =
+        data_2 %>% 
+        select(-id,-`Tidak ada`)
+      
       # jika tiada isiannya
       if(is.null(data_2$GoFood)){data_2$GoFood = 0}
       if(is.null(data_2$GrabFood)){data_2$GrabFood = 0}
@@ -522,12 +533,23 @@ server <- function(input, output,session) {
       data_3 = 
         data %>% 
         select(id,merchant_collaboration) %>% 
+        mutate(merchant_collaboration = ifelse(is.na(merchant_collaboration),
+                                               "Tidak ada",
+                                               merchant_collaboration)) %>% 
         separate_rows(merchant_collaboration,
                       sep = "\n") %>% 
         dcast(id ~ merchant_collaboration,
               length,
-              value.var = "merchant_collaboration") %>% 
-        select(-id,-`NA`)
+              value.var = "merchant_collaboration")
+      
+      # jika tiada "Tidak ada"
+      if(is.null(data_3$`Tidak ada`)){data_3$`Tidak ada` = NA}
+      
+      # kita hapus dulu
+      data_3 =
+        data_3 %>% 
+        select(-id,-`Tidak ada`)
+      
       # jika tiada isiannya
       if(is.null(data_3$`Product listing`)){data_3$`Product listing` = 0}
       if(is.null(data_3$`Product Bundling`)){data_3$`Product Bundling` = 0}
