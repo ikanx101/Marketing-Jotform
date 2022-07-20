@@ -63,10 +63,10 @@ filterpane = tabItem(tabName = 'filterpane',
                                 h5("Jika terjadi kendala atau pertanyaan, feel free to discuss ya: fadhli.mohammad@nutrifood.co.id"),
                                 br(),
                                 br(),
-                                h2("update 18 Juli 2022 09:13 WIB"),
+                                h2("update 20 Juli 2022 14:43 WIB"),
                                 h4("Apa yang berubah?"),
-                                h5("Mengakomodir error pada CPA."),
-                                h5("copyright 2022"),
+                                h5("Perubahan pada submission date"),
+                                h5("Copyright 2022"),
                                 h5("Dibuat menggunakan R")
                          )
                      )
@@ -119,7 +119,7 @@ converter_2 = tabItem(tabName = 'converter_2',
                           )
                       )
 
-# tab Converter Awareness pre historic
+# tab Converter Awareness 2022 TERBARU!!!
 awareness_2 = tabItem(tabName = 'aware_new',
                     fluidRow(
                       column(width = 12,
@@ -423,7 +423,7 @@ server <- function(input, output,session) {
     
     
     # =============================================================================
-    # ini skrip untuk konverter yang baru
+    # ini skrip untuk konverter SALES yang baru
     # 2022 style
     data_upload_3 = reactive({
       inFile <- input$target_upload_3
@@ -440,12 +440,7 @@ server <- function(input, output,session) {
       # function untuk split tanggal submisi
       tanggal_submisi_func = function(tgl){
         # proses split tanggal
-        tgl = 
-          tgl %>% 
-          strsplit(split = " ") %>% 
-          unlist() %>% 
-          .[[1]] %>% 
-          as.Date(format = "%Y-%m-%d")
+        tgl = tgl %>% as.Date(format = "%B %d, %Y") # perubahan tanggal transaksi terbaru d sini
         # output tanggal
         return(tgl)
       }
@@ -632,7 +627,6 @@ server <- function(input, output,session) {
     # skrip converter awareness baru
     # 2022 STYLE
     # =============================================================================
-    # converter awareness lama
     data_upload_4 <- reactive({
       inFile <- input$target_upload_4
       if (is.null(inFile))
@@ -647,7 +641,7 @@ server <- function(input, output,session) {
       
       data_final = 
         data %>% 
-        mutate(submission_date = as.Date(submission_date,"%Y-%m-%d"),
+        mutate(submission_date = as.Date(submission_date,format = "%B %d, %Y"),
                tanggal_kegiatan = as.Date(tanggal_kegiatan,"%B %d, %Y"),) %>% 
         separate(dept_provinsi_kota_kab_kecamatan,
                  into = c("dept","provinsi","kota_kab","kecamatan"),

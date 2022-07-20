@@ -12,12 +12,7 @@ library(reshape2)
 # function untuk split tanggal submisi
 tanggal_submisi_func = function(tgl){
   # proses split tanggal
-  tgl = 
-    tgl %>% 
-    strsplit(split = " ") %>% 
-    unlist() %>% 
-    .[[1]] %>% 
-    as.Date(format = "%Y-%m-%d")
+  tgl = tgl %>% as.Date(format = "%B %d, %Y") # perubahan tanggal transaksi terbaru d sini
   # output tanggal
   return(tgl)
 }
@@ -37,7 +32,7 @@ proper_new = function(x){
 
 # memanggil dataset baru
 data = 
-  read_excel("Jotform_Sales_New_2022_-_CPB2022-07-14_23_34_45.xlsx") %>% 
+  read_excel("Jotform_Sales_New_2022_-_CPC2022-07-20_02_27_11.xlsx") %>% 
   janitor::clean_names() %>% 
   rowwise() %>% 
   mutate(submission_date = tanggal_submisi_func(submission_date),

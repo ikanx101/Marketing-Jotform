@@ -12,7 +12,7 @@ data = read_excel("uji coba.xlsx") %>% janitor::clean_names()
 
 data_final = 
   data %>% 
-  mutate(submission_date = as.Date(submission_date,"%Y-%m-%d"),
+  mutate(submission_date = as.Date(submission_date,format = "%B %d, %Y"),
          tanggal_kegiatan = as.Date(tanggal_kegiatan,"%B %d, %Y"),) %>% 
   separate(dept_provinsi_kota_kab_kecamatan,
            into = c("dept","provinsi","kota_kab","kecamatan"),
