@@ -1,4 +1,4 @@
-setwd("/cloud/project/Algoritma/2022/Sales")
+setwd("~/Documents/Marketing-Jotform/Algoritma/2023/Sales")
 
 # bebersih global environment
 rm(list=ls())
@@ -9,10 +9,14 @@ library(dplyr)
 library(tidyr)
 library(reshape2)
 
+# nama file jotform
+nama_file = "dummy sales.xlsx"
+sht = excel_sheets(nama_file)
+
 # function untuk split tanggal submisi
 tanggal_submisi_func = function(tgl){
   # proses split tanggal
-  tgl = tgl %>% as.Date(format = "%B %d, %Y") # perubahan tanggal transaksi terbaru d sini
+  tgl = tgl %>% as.Date(format = "%d/%m/%Y") # perubahan tanggal transaksi terbaru d sini
   # output tanggal
   return(tgl)
 }
@@ -32,7 +36,7 @@ proper_new = function(x){
 
 # memanggil dataset baru
 data = 
-  read_excel("Jotform_Sales_New_2022_-_CPC2022-07-20_02_27_11.xlsx") %>% 
+  read_excel(nama_file,sheet = sht[1]) %>% 
   janitor::clean_names() %>% 
   rowwise() %>% 
   mutate(submission_date = tanggal_submisi_func(submission_date),
@@ -59,14 +63,16 @@ data_1 =
   mutate(project = trimws(project),
          jenis_channel = trimws(jenis_channel),
          sub_channel = trimws(sub_channel)) %>% 
-  separate(darimana_asal_barang_yang_kamu_jual,
-           into = c("sumber_barang","jenis_nutrimart"),
-           sep = "\\;") %>% 
-  mutate(sumber_barang = trimws(sumber_barang),
-         jenis_nutrimart = trimws(jenis_nutrimart)) %>% 
-  select(-platform_online_merchant,-merchant_collaboration,-penjualan)
+  # ini adalah perbedaan di tahun 2023
+  separate(brand_tidak_deal,
+           into = c("brand_tidak_deal_1","brand_tidak_deal_2","brand_tidak_deal_3"),
+           sep = " ") %>% 
+  select(-platform_online_merchant, #ini akan kita pecah sesuai dengan kategori
+         -penjualan #ini kita pecah jadi tabular
+         )
 
-# data kedua
+
+# data kedua, hanya platform online merchant yang akan kita pecah sendiri
 data_2 = 
   data %>% 
   select(id,platform_online_merchant) %>% 
@@ -74,7 +80,7 @@ data_2 =
                                            "Tidak ada",
                                            platform_online_merchant)) %>% 
   separate_rows(platform_online_merchant,
-                sep = "\n") %>% 
+                sep = "\r\n") %>% 
   dcast(id ~ platform_online_merchant,
         length,
         value.var = "platform_online_merchant") 
@@ -98,40 +104,8 @@ data_2[data_2 == 0] = "No"
 data_2[data_2 == 1] = "Yes"
 data_2$id = 1:nrow(data_2)
 
-# data ketiga
+# data ketiga adalah bentuk tabular dari penjualan
 data_3 = 
-  data %>% 
-  select(id,merchant_collaboration) %>% 
-  mutate(merchant_collaboration = ifelse(is.na(merchant_collaboration),
-                                         "Tidak ada",
-                                         merchant_collaboration)) %>% 
-  separate_rows(merchant_collaboration,
-                sep = "\n") %>% 
-  dcast(id ~ merchant_collaboration,
-        length,
-        value.var = "merchant_collaboration")
-
-# jika tiada "Tidak ada"
-if(is.null(data_3$`Tidak ada`)){data_3$`Tidak ada` = NA}
-
-# kita hapus dulu
-data_3 =
-  data_3 %>% 
-  select(-id,-`Tidak ada`)
-
-# jika tiada isiannya
-if(is.null(data_3$`Product listing`)){data_3$`Product listing` = 0}
-if(is.null(data_3$`Product Bundling`)){data_3$`Product Bundling` = 0}
-if(is.null(data_3$`Product Collaboration`)){data_3$`Product Collaboration` = 0}
-if(is.null(data_3$`Branding Offline`)){data_3$`Branding Offline` = 0}
-if(is.null(data_3$`Branding Online`)){data_3$`Branding Online` = 0}
-# kita ubah jadi ya dan no
-data_3[data_3 == 0] = "No"
-data_3[data_3 == 1] = "Yes"
-data_3$id = 1:nrow(data_3)
-
-# data keempat
-data_4 = 
   data %>% 
   select(id,penjualan) %>% 
   separate_rows(penjualan,
@@ -155,6 +129,7 @@ data_4 =
   rowwise() %>% 
   mutate(brand = case_when(
     grepl("ts",item,ignore.case = T) ~ "TS",
+    grepl("lmen|l men|l-men",item,ignore.case = T) ~ "L-Men",
     grepl("ns|nutri",item,ignore.case = T) ~ "NS",
     grepl("lokal",item,ignore.case = T) ~ "Lokalate",
     grepl("Diabetamil",item,ignore.case = T) ~ "Diabetamil",
@@ -167,7 +142,6 @@ data_4 =
 data_kumpul = 
   merge(data_1,data_2) %>% 
   merge(data_3) %>% 
-  merge(data_4) %>% 
   rowwise() %>% 
   mutate(nomor_telepon = gsub("+62","0",nomor_telepon,fixed = T),
          nomor_telepon = substr(nomor_telepon,
@@ -179,4 +153,4 @@ data_kumpul =
 
 colnames(data_kumpul) = proper_new(colnames(data_kumpul))
 
-openxlsx::write.xlsx(data_kumpul,file = "hasil.xlsx")
+openxlsx::write.xlsx(data_kumpul,file = "output sales.xlsx")
