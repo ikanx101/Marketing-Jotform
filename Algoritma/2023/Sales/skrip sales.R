@@ -107,7 +107,7 @@ data_2[data_2 == 1] = "Yes"
 data_2$id = 1:nrow(data_2)
 
 # data ketiga adalah bentuk tabular dari penjualan
-data_3 = 
+data_4 = 
   data %>% 
   select(id,penjualan) %>% 
   separate_rows(penjualan,
@@ -141,17 +141,20 @@ data_3 =
   ungroup()
 
 # data keempat
-data_4 = 
+data_3 = 
   data %>% 
   select(id,merchant_collaboration) %>% 
   mutate(merchant_collaboration = ifelse(is.na(merchant_collaboration),
                                          "Tidak ada",
                                          merchant_collaboration)) %>% 
   separate_rows(merchant_collaboration,
-                sep = "\n") %>% 
+                sep = "\r\n") %>% 
   dcast(id ~ merchant_collaboration,
         length,
         value.var = "merchant_collaboration")
+data_3[data_3 == 1] = "Yes"
+data_3[data_3 == 0] = "No"
+data_3$id[1] = 1
 
 # kita kumpulin dulu data_1, data_2, data_3
 data_kumpul = 
@@ -168,5 +171,4 @@ data_kumpul =
   ungroup()
 
 colnames(data_kumpul) = proper_new(colnames(data_kumpul))
-
-openxlsx::write.xlsx(data_kumpul,file = "output sales.xlsx")
+openxlsx::write.xlsx(data_kumpul,file = "output sales rev.xlsx")
