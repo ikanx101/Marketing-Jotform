@@ -1,4 +1,4 @@
-setwd("~/Documents/Marketing-Jotform/Algoritma/2023/Sales")
+setwd("~/Marketing-Jotform/Algoritma/2023/Sales")
 
 # bebersih global environment
 rm(list=ls())
@@ -56,7 +56,8 @@ data_1 =
   mutate(dept = trimws(dept),
          provinsi = trimws(provinsi),
          kota_kab = trimws(kota_kab),
-         kecamatan = trimws(kecamatan)) %>% 
+         kecamatan = trimws(kecamatan),
+         nama_project_others = as.character(nama_project_others)) %>% 
   separate(project_jenis_channel_sub_channel,
            into = c("project","jenis_channel","sub_channel"),
            sep = "\\;") %>% 
@@ -66,9 +67,10 @@ data_1 =
   # ini adalah perbedaan di tahun 2023
   separate(brand_tidak_deal,
            into = c("brand_tidak_deal_1","brand_tidak_deal_2","brand_tidak_deal_3"),
-           sep = " ") %>% 
+           sep = "\r\n") %>% 
   select(-platform_online_merchant, #ini akan kita pecah sesuai dengan kategori
-         -penjualan #ini kita pecah jadi tabular
+         -penjualan, #ini kita pecah jadi tabular,
+         -merchant_collaboration
          )
 
 
@@ -138,10 +140,24 @@ data_3 =
          ) %>% 
   ungroup()
 
+# data keempat
+data_4 = 
+  data %>% 
+  select(id,merchant_collaboration) %>% 
+  mutate(merchant_collaboration = ifelse(is.na(merchant_collaboration),
+                                         "Tidak ada",
+                                         merchant_collaboration)) %>% 
+  separate_rows(merchant_collaboration,
+                sep = "\n") %>% 
+  dcast(id ~ merchant_collaboration,
+        length,
+        value.var = "merchant_collaboration")
+
 # kita kumpulin dulu data_1, data_2, data_3
 data_kumpul = 
   merge(data_1,data_2) %>% 
   merge(data_3) %>% 
+  merge(data_4) %>% 
   rowwise() %>% 
   mutate(nomor_telepon = gsub("+62","0",nomor_telepon,fixed = T),
          nomor_telepon = substr(nomor_telepon,
