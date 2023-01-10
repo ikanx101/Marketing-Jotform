@@ -1,8 +1,9 @@
-setwd("/cloud/project/Algoritma/2023/Awareness")
+setwd("~/Marketing-Jotform/Algoritma/2023/Awareness")
 
 library(readxl)
 library(dplyr)
 library(tidyr)
+library(openxlsx)
 
 rm(list=ls())
 
@@ -42,7 +43,13 @@ data_final =
          kota_kab = trimws(kota_kab),
          kecamatan = trimws(kecamatan)) %>% 
   mutate(bulan = lubridate::month(tanggal_kegiatan,label = T)) %>% 
-  relocate(bulan,.after = tanggal_kegiatan)
+  relocate(bulan,.after = tanggal_kegiatan) %>% 
+  mutate(jumlah_kantin = gsub(" ","",jumlah_kantin),
+         jumlah_kantin = as.numeric(jumlah_kantin),
+         jumlah_voucher_teredeem = gsub(" ","",jumlah_voucher_teredeem),
+         jumlah_voucher_teredeem = as.numeric(jumlah_voucher_teredeem),
+         jumlah_sku_nutrifood_di_kantin_sekolah = gsub(" ","",jumlah_sku_nutrifood_di_kantin_sekolah),
+         jumlah_sku_nutrifood_di_kantin_sekolah = as.numeric(jumlah_sku_nutrifood_di_kantin_sekolah))
   
 tes = colnames(data_final)
 tes = gsub("\\_"," ",tes)
