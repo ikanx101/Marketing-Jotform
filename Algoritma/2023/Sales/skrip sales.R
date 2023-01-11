@@ -65,6 +65,7 @@ data_1 =
          jenis_channel = trimws(jenis_channel),
          sub_channel = trimws(sub_channel)) %>% 
   # ini adalah perbedaan di tahun 2023
+  mutate(brand_tidak_deal = gsub("\r","",brand_tidak_deal)) %>% 
   separate(brand_tidak_deal,
            into = c("brand_tidak_deal_1","brand_tidak_deal_2","brand_tidak_deal_3"),
            sep = "\n") %>% 
@@ -80,9 +81,10 @@ data_2 =
   select(id,platform_online_merchant) %>% 
   mutate(platform_online_merchant = ifelse(is.na(platform_online_merchant),
                                            "Tidak ada",
-                                           platform_online_merchant)) %>% 
+                                           platform_online_merchant)) %>%
+  mutate(platform_online_merchant = gsub("\r","",platform_online_merchant)) %>% 
   separate_rows(platform_online_merchant,
-                sep = "\r\n") %>% 
+                sep = "\n") %>% 
   dcast(id ~ platform_online_merchant,
         length,
         value.var = "platform_online_merchant") 
@@ -147,8 +149,9 @@ data_3 =
   mutate(merchant_collaboration = ifelse(is.na(merchant_collaboration),
                                          "Tidak ada",
                                          merchant_collaboration)) %>% 
+  mutate(merchant_collaboration = gsub("\r","",merchant_collaboration)) %>% 
   separate_rows(merchant_collaboration,
-                sep = "\r\n") %>% 
+                sep = "\n") %>% 
   dcast(id ~ merchant_collaboration,
         length,
         value.var = "merchant_collaboration")
