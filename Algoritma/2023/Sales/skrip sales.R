@@ -10,7 +10,7 @@ library(tidyr)
 library(reshape2)
 
 # nama file jotform
-nama_file = "dummy sales.xlsx"
+nama_file = "Jotform_Sales_2023_-_CPX2023-01-10_02_45_39.xlsx"
 sht = excel_sheets(nama_file)
 
 # function untuk split tanggal submisi
@@ -67,7 +67,7 @@ data_1 =
   # ini adalah perbedaan di tahun 2023
   separate(brand_tidak_deal,
            into = c("brand_tidak_deal_1","brand_tidak_deal_2","brand_tidak_deal_3"),
-           sep = "\r\n") %>% 
+           sep = "\n") %>% 
   select(-platform_online_merchant, #ini akan kita pecah sesuai dengan kategori
          -penjualan, #ini kita pecah jadi tabular,
          -merchant_collaboration

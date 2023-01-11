@@ -180,7 +180,7 @@ server <- function(input, output,session) {
           # ini adalah perbedaan di tahun 2023
           separate(brand_tidak_deal,
                    into = c("brand_tidak_deal_1","brand_tidak_deal_2","brand_tidak_deal_3"),
-                   sep = "\r\n") %>% 
+                   sep = "\n") %>% 
           select(-platform_online_merchant, #ini akan kita pecah sesuai dengan kategori
                  -penjualan, #ini kita pecah jadi tabular,
                  -merchant_collaboration
