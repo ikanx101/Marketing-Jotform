@@ -220,6 +220,7 @@ server <- function(input, output,session) {
         data_2[data_2 == 0] = "No"
         data_2[data_2 == 1] = "Yes"
         data_2$id = 1:nrow(data_2)
+        data_2 = data_2 %>% relocate(`Delivery Mandiri`,.before = "GoFood")
         
         # data ketiga adalah bentuk tabular dari penjualan
         data_4 = 
@@ -270,8 +271,13 @@ server <- function(input, output,session) {
                 value.var = "merchant_collaboration")
         
         # jika tiada "Tidak ada"
+        if(is.null(data_3$`Branding Offline`)){data_3$`Branding Offline` = 0}
+        if(is.null(data_3$`Branding Online`)){data_3$`Branding Online` = 0}
+        if(is.null(data_3$`Product Bundling`)){data_3$`Product Bundling` = 0}
+        if(is.null(data_3$`Product listing`)){data_3$`Product listing` = 0}
+        if(is.null(data_3$`Product Collaboration`)){data_3$`Product Collaboration` = 0}
         if(is.null(data_3$`Tidak ada`)){data_3$`Tidak ada` = 0}
-        
+        data_3 = data_3 %>% relocate(`Product Collaboration`,.before = `Product listing`)
         data_3[data_3 == 1] = "Yes"
         data_3[data_3 == 0] = "No"
         data_3$id[1] = 1

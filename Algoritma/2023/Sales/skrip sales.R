@@ -10,7 +10,7 @@ library(tidyr)
 library(reshape2)
 
 # nama file jotform
-nama_file = "Jotform_Sales_S1_2023_-_CPA2023-01-22_22_20_15.xlsx"
+nama_file = "cpy.xlsx"
 sht = excel_sheets(nama_file)
 
 # function untuk split tanggal submisi
@@ -107,6 +107,7 @@ if(is.null(data_2$`Online Food Delivery Lainnya`)){data_2$`Online Food Delivery 
 data_2[data_2 == 0] = "No"
 data_2[data_2 == 1] = "Yes"
 data_2$id = 1:nrow(data_2)
+data_2 = data_2 %>% relocate(`Delivery Mandiri`,.before = "GoFood")
 
 # data ketiga adalah bentuk tabular dari penjualan
 data_4 = 
@@ -155,8 +156,15 @@ data_3 =
   dcast(id ~ merchant_collaboration,
         length,
         value.var = "merchant_collaboration")
+
 # jika tiada "Tidak ada"
+if(is.null(data_3$`Branding Offline`)){data_3$`Branding Offline` = 0}
+if(is.null(data_3$`Branding Online`)){data_3$`Branding Online` = 0}
+if(is.null(data_3$`Product Bundling`)){data_3$`Product Bundling` = 0}
+if(is.null(data_3$`Product listing`)){data_3$`Product listing` = 0}
+if(is.null(data_3$`Product Collaboration`)){data_3$`Product Collaboration` = 0}
 if(is.null(data_3$`Tidak ada`)){data_3$`Tidak ada` = 0}
+data_3 = data_3 %>% relocate(`Product Collaboration`,.before = `Product listing`)
 
 data_3[data_3 == 1] = "Yes"
 data_3[data_3 == 0] = "No"
@@ -177,4 +185,4 @@ data_kumpul =
   ungroup()
 
 colnames(data_kumpul) = proper_new(colnames(data_kumpul))
-openxlsx::write.xlsx(data_kumpul,file = "output sales rev.xlsx")
+# openxlsx::write.xlsx(data_kumpul,file = "output sales rev.xlsx")
