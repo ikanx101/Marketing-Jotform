@@ -268,6 +268,10 @@ server <- function(input, output,session) {
           dcast(id ~ merchant_collaboration,
                 length,
                 value.var = "merchant_collaboration")
+        
+        # jika tiada "Tidak ada"
+        if(is.null(data_3$`Tidak ada`)){data_3$`Tidak ada` = 0}
+        
         data_3[data_3 == 1] = "Yes"
         data_3[data_3 == 0] = "No"
         data_3$id[1] = 1

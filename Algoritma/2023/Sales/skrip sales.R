@@ -10,7 +10,7 @@ library(tidyr)
 library(reshape2)
 
 # nama file jotform
-nama_file = "Jotform_Sales_2023_-_CPX2023-01-10_02_45_39.xlsx"
+nama_file = "Jotform_Sales_S1_2023_-_CPA2023-01-22_22_20_15.xlsx"
 sht = excel_sheets(nama_file)
 
 # function untuk split tanggal submisi
@@ -155,6 +155,9 @@ data_3 =
   dcast(id ~ merchant_collaboration,
         length,
         value.var = "merchant_collaboration")
+# jika tiada "Tidak ada"
+if(is.null(data_3$`Tidak ada`)){data_3$`Tidak ada` = 0}
+
 data_3[data_3 == 1] = "Yes"
 data_3[data_3 == 0] = "No"
 data_3$id[1] = 1
