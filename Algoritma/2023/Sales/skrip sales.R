@@ -107,7 +107,9 @@ if(is.null(data_2$`Online Food Delivery Lainnya`)){data_2$`Online Food Delivery 
 data_2[data_2 == 0] = "No"
 data_2[data_2 == 1] = "Yes"
 data_2$id = 1:nrow(data_2)
-data_2 = data_2 %>% relocate(`Delivery Mandiri`,.before = "GoFood")
+data_2 = data_2 %>% select(id,GoFood,GrabFood,ShopeeFood,
+                           `Delivery Mandiri`,
+                           `Online Food Delivery Lainnya`)
 
 # data ketiga adalah bentuk tabular dari penjualan
 data_4 = 
@@ -164,7 +166,11 @@ if(is.null(data_3$`Product Bundling`)){data_3$`Product Bundling` = 0}
 if(is.null(data_3$`Product listing`)){data_3$`Product listing` = 0}
 if(is.null(data_3$`Product Collaboration`)){data_3$`Product Collaboration` = 0}
 if(is.null(data_3$`Tidak ada`)){data_3$`Tidak ada` = 0}
-data_3 = data_3 %>% relocate(`Product Collaboration`,.before = `Product listing`)
+
+# kita paksakan urutan kolom
+data_3 = data_3 %>% select(id,`Branding Offline`,`Branding Online`,
+                           `Product Bundling`,`Product listing`,
+                           `Product Collaboration`,`Tidak ada`)
 
 data_3[data_3 == 1] = "Yes"
 data_3[data_3 == 0] = "No"
