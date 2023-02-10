@@ -19,10 +19,10 @@ library(shinymanager)
 rm(list=ls())
 
 # buat credential
-credentials = data.frame(
-    user = c("nutrifood", "ikanx_server"), # mandatory
-    password = c("nutrisari", "ahnaf"), # mandatory
-    admin = c(TRUE, TRUE),
+credentials  = data.frame(
+    user     = c("nutrifood", "ikanx101"), # mandatory
+    password = c("nutrisari", "ikanx101"), # mandatory
+    admin    = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
 
@@ -61,7 +61,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 br(),
                                 h4(paste0("update ",waktu_update)),
                                 h4("Apa yang berubah?"),
-                                h5("Perubahan menjadi format survey tahun 2023"),
+                                h5("Perubahan project others menjadi nama sekolah"),
                                 h5("Copyright 2023"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -103,7 +103,7 @@ awareness = tabItem(tabName = 'awareness',
 body = dashboardBody(tabItems(filterpane,converter,awareness))
 
 # ui all
-ui = secure_app(dashboardPage(skin = "green",header,sidebar,body))
+ui = secure_app(dashboardPage(skin = "red",header,sidebar,body))
 
 # server part
 server <- function(input, output,session) {
@@ -169,8 +169,7 @@ server <- function(input, output,session) {
           mutate(dept = trimws(dept),
                  provinsi = trimws(provinsi),
                  kota_kab = trimws(kota_kab),
-                 kecamatan = trimws(kecamatan),
-                 nama_project_others = as.character(nama_project_others)) %>% 
+                 kecamatan = trimws(kecamatan)) %>% 
           separate(project_jenis_channel_sub_channel,
                    into = c("project","jenis_channel","sub_channel"),
                    sep = "\\;") %>% 
