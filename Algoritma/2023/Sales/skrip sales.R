@@ -10,7 +10,7 @@ library(tidyr)
 library(reshape2)
 
 # nama file jotform
-nama_file = "cpy.xlsx"
+nama_file = "Jotform_Sales_S1_2023_-_CPF2023-02-09_05_02_23.xlsx"
 sht = excel_sheets(nama_file)
 
 # function untuk split tanggal submisi
@@ -56,8 +56,7 @@ data_1 =
   mutate(dept = trimws(dept),
          provinsi = trimws(provinsi),
          kota_kab = trimws(kota_kab),
-         kecamatan = trimws(kecamatan),
-         nama_project_others = as.character(nama_project_others)) %>% 
+         kecamatan = trimws(kecamatan)) %>% 
   separate(project_jenis_channel_sub_channel,
            into = c("project","jenis_channel","sub_channel"),
            sep = "\\;") %>% 
