@@ -32,7 +32,7 @@ waktu_update = Sys.time() %>% as.character()
 # USER INTERFACE
 
 # header
-header = dashboardHeader(title = "Jotform Converter AM v2.023",
+header = dashboardHeader(title = "Jotform Converter AM 2023 v3.0",
                          titleWidth = 300)
 
 #sidebar menu
@@ -41,9 +41,11 @@ sidebar = dashboardSidebar(width = 300,
                                menuItem(tabName = 'filterpane',
                                         text = 'Read Me',icon = icon('check')),
                                menuItem(tabName = 'converter',
-                                        text = 'Converter Sales Survey',icon = icon('dollar')),
+                                        text = 'Converter Sales Survey',icon = icon('dollar-sign')),
                                menuItem(tabName = 'awareness',
-                                        text = 'Converter Awareness Survey',icon = icon('spinner'))
+                                        text = 'Converter Awareness Survey',icon = icon('spinner')),
+                               menuItem(tabName = 'spg',
+                                        text = 'Converter SPG Event',icon = icon('child-dress'))
                                     )
                            )
 
