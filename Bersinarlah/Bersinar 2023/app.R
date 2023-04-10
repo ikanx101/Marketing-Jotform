@@ -20,8 +20,8 @@ rm(list=ls())
 
 # buat credential
 credentials  = data.frame(
-    user     = c("nutrifood", "ikanx101"), # mandatory
-    password = c("nutrisari", "ikanx101"), # mandatory
+    user     = c("nutrifood", "Ikanx"), # mandatory
+    password = c("nutrisari", "a"), # mandatory
     admin    = c(TRUE, TRUE),
     stringsAsFactors = FALSE
 )
@@ -63,14 +63,14 @@ filterpane = tabItem(tabName = 'filterpane',
                                 br(),
                                 h4(paste0("update ",waktu_update)),
                                 h4("Apa yang berubah?"),
-                                h5("Perubahan project others menjadi nama sekolah"),
+                                h5("Converter SPG Event"),
                                 h5("Copyright 2023"),
                                 h5("Dibuat menggunakan R")
                          )
                      )
             )
 
-# tab Converter Sales pre historic
+# tab Converter Sales BARU
 converter = tabItem(tabName = 'converter',
                      fluidRow(
                          column(width = 12,
@@ -86,7 +86,7 @@ converter = tabItem(tabName = 'converter',
                     )
 
 
-# tab Converter Awareness pre historic
+# tab Converter Awareness BARU
 awareness = tabItem(tabName = 'awareness',
                     fluidRow(
                         column(width = 12,
@@ -101,8 +101,24 @@ awareness = tabItem(tabName = 'awareness',
                     )
               )
 
+# tab Converter SPG Event
+spg_event = tabItem(tabName = 'spg',
+                    fluidRow(
+                      column(width = 12,
+                             h1('Converter SPG Event'),
+                             h4("Silakan upload file Anda:"),
+                             fileInput('target_upload_3', 'Pilih file',
+                                       accept = c('xlsx')
+                             ),
+                             br(),
+                             downloadButton("downloadData_3", "Download")
+                      )
+                    )
+            )
+
+
 # body
-body = dashboardBody(tabItems(filterpane,converter,awareness))
+body = dashboardBody(tabItems(filterpane,converter,awareness,spg_event))
 
 # ui all
 ui = secure_app(dashboardPage(skin = "red",header,sidebar,body))
@@ -325,7 +341,7 @@ server <- function(input, output,session) {
     
     
     # =============================================================================
-    # converter awareness lama
+    # converter awareness baru
     data_upload_2 <- reactive({
         inFile <- input$target_upload_2
         if (is.null(inFile))
@@ -396,6 +412,89 @@ server <- function(input, output,session) {
         }
     )
     
+    
+    # =============================================================================
+    # converter SPG EVENT Terbaru
+    data_upload_3 <- reactive({
+      inFile <- input$target_upload_3
+      if (is.null(inFile))
+        return(NULL)
+      
+      # baca data
+      df <- read_excel(inFile$datapath) %>% 
+        janitor::clean_names() 
+      
+      # =================================
+      # mulai dari sini
+      
+      # kita akan buat function tanggal terlebih dahulu
+      konversi = function(tgl){
+        as.Date(tgl,"%B %d, %Y")
+      }
+      
+      data_final = 
+        df %>% 
+        mutate(id = 1:nrow(df)) %>% 
+        relocate(id,.before = submission_date) %>% 
+        rowwise() %>% 
+        mutate(submission_date   = konversi(submission_date),
+               tanggal_transaksi = konversi(tanggal_transaksi)) %>% 
+        mutate(submission_date   = format(submission_date,"%B %d, %Y"),
+               tanggal_transaksi = format(tanggal_transaksi,"%B %d, %Y")) %>% 
+        ungroup() %>% 
+        separate(dept_provinsi_kota_kab_nama_toko_nama_spg_event,
+                 into = c("dept","provinsi","kota_kab","nama_toko","nama_spg_event"),
+                 sep  = ";") %>% 
+        mutate(dept           = trimws(dept),
+               provinsi       = trimws(provinsi),
+               kota_kab       = trimws(kota_kab),
+               nama_toko      = trimws(nama_toko),
+               nama_spg_event = trimws(nama_spg_event)) %>% 
+        separate_rows(penjualan,
+                      sep = "\r\n") %>% 
+        filter(!grepl("total",penjualan,ignore.case = T)) %>% 
+        separate(penjualan,
+                 into = c("item","info","qty"),
+                 sep  = ":") %>% 
+        mutate(item = gsub("\\(Amount","",item),
+               item = trimws(item)) %>% 
+        separate(info,
+                 into = c("price","info_2"),
+                 sep  = "IDR,") %>% 
+        mutate(price = gsub("\\.00","",price),
+               price = gsub("\\,","",price),
+               price = as.numeric(price)) %>% 
+        mutate(quantity = gsub("\\)","",qty),
+               quantity = as.numeric(quantity)) %>% 
+        select(-info_2,-qty) %>% 
+        mutate(total_value = price * quantity)
+      
+      
+      # proses untuk membersihkan nama kolom
+      proper <- function(x){
+        stringi::stri_trans_general(x,id = "Title")
+      }
+      # kita simpan dulu nama kolomnya
+      tes = colnames(data_final)
+      tes = gsub("\\_"," ",tes)
+      
+      colnames(data_final) = proper(tes)
+      
+      # =================================
+      # akhir di sini
+      return(data_final)
+    })
+    
+    data_3 = data_upload_3
+    
+    output$downloadData_3 <- downloadHandler(
+      filename = function() {
+        paste("SPG Event Jotform ", Sys.time(), ".xlsx", sep="")
+      },
+      content = function(file) {
+        openxlsx::write.xlsx(data_3(), file)
+      }
+    )
     
 
 }
