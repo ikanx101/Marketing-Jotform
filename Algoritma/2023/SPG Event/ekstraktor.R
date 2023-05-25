@@ -1,12 +1,13 @@
 rm(list=ls())
 
-setwd("/cloud/project/Algoritma/2023/SPG Event")
+setwd("~/Marketing-Jotform/Algoritma/2023/SPG Event")
 
 library(dplyr)
 library(tidyr)
+library(readxl)
 
 # kita ambil datanya terlebih dahulu
-file = "Struktur Data SPG Event TS.xlsx"
+file = "input.xlsx"
 df   = read_excel(file) %>% janitor::clean_names()
 
 # kita akan buat function tanggal terlebih dahulu
@@ -33,7 +34,7 @@ df =
          nama_toko      = trimws(nama_toko),
          nama_spg_event = trimws(nama_spg_event)) %>% 
   separate_rows(penjualan,
-                sep = "\r\n") %>% 
+                sep = "\n") %>% 
   filter(!grepl("total",penjualan,ignore.case = T)) %>% 
   separate(penjualan,
            into = c("item","info","qty"),

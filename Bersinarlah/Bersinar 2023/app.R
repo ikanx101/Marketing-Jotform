@@ -32,7 +32,7 @@ waktu_update = Sys.time() %>% as.character()
 # USER INTERFACE
 
 # header
-header = dashboardHeader(title = "Jotform Converter AM 2023 v3.0",
+header = dashboardHeader(title = "Jotform Converter AM 2023 v3.1",
                          titleWidth = 300)
 
 #sidebar menu
@@ -63,7 +63,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 br(),
                                 h4(paste0("update ",waktu_update)),
                                 h4("Apa yang berubah?"),
-                                h5("Converter SPG Event"),
+                                h5("Penyesuaian pada converter SPG event"),
                                 h5("Copyright 2023"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -121,7 +121,7 @@ spg_event = tabItem(tabName = 'spg',
 body = dashboardBody(tabItems(filterpane,converter,awareness,spg_event))
 
 # ui all
-ui = secure_app(dashboardPage(skin = "red",header,sidebar,body))
+ui = secure_app(dashboardPage(skin = "blue",header,sidebar,body))
 
 # server part
 server <- function(input, output,session) {
@@ -451,7 +451,7 @@ server <- function(input, output,session) {
                nama_toko      = trimws(nama_toko),
                nama_spg_event = trimws(nama_spg_event)) %>% 
         separate_rows(penjualan,
-                      sep = "\r\n") %>% 
+                      sep = "\n") %>% 
         filter(!grepl("total",penjualan,ignore.case = T)) %>% 
         separate(penjualan,
                  into = c("item","info","qty"),
