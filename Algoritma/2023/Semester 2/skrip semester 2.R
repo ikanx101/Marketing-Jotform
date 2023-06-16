@@ -109,50 +109,39 @@ data_2 =
          ) %>% 
   ungroup()
 
-# data keempat
-data_3 = 
-  data %>% 
-  select(id,merchant_collaboration) %>% 
-  mutate(merchant_collaboration = ifelse(is.na(merchant_collaboration),
-                                         "Tidak ada",
-                                         merchant_collaboration)) %>% 
-  mutate(merchant_collaboration = gsub("\r","",merchant_collaboration)) %>% 
-  separate_rows(merchant_collaboration,
-                sep = "\n") %>% 
-  dcast(id ~ merchant_collaboration,
-        length,
-        value.var = "merchant_collaboration")
-
-# jika tiada "Tidak ada"
-if(is.null(data_3$`Branding Offline`)){data_3$`Branding Offline` = 0}
-if(is.null(data_3$`Branding Online`)){data_3$`Branding Online` = 0}
-if(is.null(data_3$`Product Bundling`)){data_3$`Product Bundling` = 0}
-if(is.null(data_3$`Product listing`)){data_3$`Product listing` = 0}
-if(is.null(data_3$`Product Collaboration`)){data_3$`Product Collaboration` = 0}
-if(is.null(data_3$`Tidak ada`)){data_3$`Tidak ada` = 0}
-
-# kita paksakan urutan kolom
-data_3 = data_3 %>% select(id,`Branding Offline`,`Branding Online`,
-                           `Product Bundling`,`Product listing`,
-                           `Product Collaboration`,`Tidak ada`)
-
-data_3[data_3 == 1] = "Yes"
-data_3[data_3 == 0] = "No"
-data_3$id[1] = 1
-
 # kita kumpulin dulu data_1, data_2, data_3
-data_kumpul = 
-  merge(data_1,data_2) %>% 
-  merge(data_3) %>% 
-  merge(data_4) %>% 
-  rowwise() %>% 
-  mutate(nomor_telepon = gsub("+62","0",nomor_telepon,fixed = T),
-         nomor_telepon = substr(nomor_telepon,
-                                2,
-                                stringr::str_length(nomor_telepon)),
-         nomor_telepon = paste0("62",nomor_telepon)
-         ) %>% 
-  ungroup()
+data_kumpul = merge(data_1,data_2)
 
-colnames(data_kumpul) = proper_new(colnames(data_kumpul))
-# openxlsx::write.xlsx(data_kumpul,file = "output sales rev.xlsx")
+# nah tugas kita belum sepenuhnya rebes karena ada baris duplikat yang
+# harus dihapus
+# kita pisah per id
+data_temp = data_kumpul %>% group_split(id)
+
+# kita buat function penghapus
+rapihinkan_angka = function(tes,nrow_tes){
+  tes$participant[2:nrow_tes]                   = NA
+  tes$jumlah_voucher_dibagikan[2:nrow_tes]      = NA
+  tes$jumlah_voucher_yang_di_redeem[2:nrow_tes] = NA
+  return(tes)
+}
+
+# kita mulai
+n_iter    = length(data_temp)
+for(i in 1:n_iter){
+  # dibuat temporary dulu
+  tes       = data_temp[[i]]
+  nbaris    = nrow(tes)
+  if(nbaris > 1){
+    output         = rapihinkan_angka(tes,nbaris)
+    # kita kembalikan lagi ke data awal
+    data_temp[[i]] = output
+  }
+  print(i)
+}
+
+data_final = do.call(rbind,data_temp)
+
+data_final %>% filter(id == 5) %>% View()
+
+colnames(data_final) = proper_new(colnames(data_final))
+openxlsx::write.xlsx(data_final,file = "output.xlsx")
