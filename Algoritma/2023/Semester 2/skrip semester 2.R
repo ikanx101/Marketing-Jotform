@@ -10,8 +10,7 @@ library(tidyr)
 library(reshape2)
 
 # nama file jotform
-nama_file = "Format New Jotform S2.xlsx"
-sht       = excel_sheets(nama_file)
+nama_file = list.files(pattern = "*.xlsx")
 
 # function untuk split tanggal submisi
 tanggal_submisi_func = function(tgl){
@@ -30,14 +29,17 @@ proper_new = function(x){
 
 # memanggil dataset baru
 data = 
-  read_excel(nama_file,sheet = sht[1]) %>% 
+  read_excel(nama_file[2]) %>% 
   janitor::clean_names() %>% 
-  rowwise() %>% 
-  mutate(submission_date   = tanggal_submisi_func(submission_date),
-         tanggal_kegiatan  = tanggal_submisi_func(tanggal_kegiatan),
-         tanggal_transaksi = tanggal_submisi_func(tanggal_transaksi)) %>% 
-  ungroup() %>% 
-  select(-ip,-submission_id)
+  rename(penjualan_products = penjualan)
+  #rowwise() %>% 
+  #mutate(submission_date   = tanggal_submisi_func(submission_date),
+  #       tanggal_kegiatan  = ifelse(is.na(tanggal_kegiatan),
+  #                                  NA,
+  #                                  tanggal_submisi_func(tanggal_kegiatan)),
+  #       tanggal_transaksi = tanggal_submisi_func(tanggal_transaksi)) %>% 
+  #ungroup() %>% 
+  #select(-ip,-submission_id)
 
 # bikin unique id dulu
 data$id = 1:nrow(data)
@@ -140,8 +142,6 @@ for(i in 1:n_iter){
 }
 
 data_final = do.call(rbind,data_temp)
-
-data_final %>% filter(id == 5) %>% View()
 
 colnames(data_final) = proper_new(colnames(data_final))
 openxlsx::write.xlsx(data_final,file = "output.xlsx")
