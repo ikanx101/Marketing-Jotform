@@ -66,7 +66,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 br(),
                                 h4(paste0("update ",waktu_update)),
                                 h4("Apa yang berubah?"),
-                                h5("Membiarkan tanggal as it is."),
+                                h5("Membiarkan tanggal kegiatan as it is."),
                                 h5("Copyright 2023"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -124,6 +124,8 @@ form_2023 = tabItem(tabName = 'form2023',
                     fluidRow(
                       column(width = 12,
                              h1('Converter Form Baru Semester II 2023'),
+                             h3("Perhatikan FORMAT TANGGAL pada file yang hendak dikonversi!"),
+                             br(),
                              h4("Silakan upload file Anda:"),
                              fileInput('target_upload_4', 'Pilih file',
                                        accept = c('xlsx')
@@ -537,11 +539,12 @@ server <- function(input, output,session) {
       # function untuk split tanggal submisi
       tanggal_submisi_func = function(tgl){
         # proses split tanggal
-        tgl = lubridate::date(tgl)
-        tgl = format(tgl,"%d/%m/%y")
+        tgl = as.Date(tgl,"%d/%m/%Y")
+        tgl = format(tgl,"%d/%m/%Y")
         # output tanggal
         return(tgl)
       }
+      
       
       # fungsi untuk bikin judul proper
       proper_new = function(x){
@@ -552,13 +555,14 @@ server <- function(input, output,session) {
       # memanggil dataset baru
       data = 
         df %>% 
-        rename(penjualan_products = penjualan)
-        #rowwise() %>% 
-        #mutate(submission_date   = tanggal_submisi_func(submission_date),
-        #       tanggal_kegiatan  = tanggal_submisi_func(tanggal_kegiatan),
-        #       tanggal_transaksi = tanggal_submisi_func(tanggal_transaksi)) %>% 
-        #ungroup() %>% 
-        #select(-ip,-submission_id)
+        rename(penjualan_products = penjualan) %>% 
+        rowwise() %>% 
+        mutate(submission_date   = tanggal_submisi_func(submission_date),
+               #tanggal_kegiatan  = ifelse(is.na(tanggal_kegiatan),
+               #                          NA,
+               #                          tanggal_submisi_func(tanggal_kegiatan)),
+               tanggal_transaksi = tanggal_submisi_func(tanggal_transaksi)) %>% 
+        ungroup() 
       
       # bikin unique id dulu
       data$id = 1:nrow(data)

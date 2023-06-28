@@ -15,8 +15,8 @@ nama_file = list.files(pattern = "*.xlsx")
 # function untuk split tanggal submisi
 tanggal_submisi_func = function(tgl){
   # proses split tanggal
-  tgl = lubridate::date(tgl)
-  tgl = format(tgl,"%d/%m/%y")
+  tgl = as.Date(tgl,"%d/%m/%Y")
+  tgl = format(tgl,"%d/%m/%Y")
   # output tanggal
   return(tgl)
 }
@@ -29,16 +29,16 @@ proper_new = function(x){
 
 # memanggil dataset baru
 data = 
-  read_excel(nama_file[2]) %>% 
+  read_excel(nama_file) %>% 
   janitor::clean_names() %>% 
-  rename(penjualan_products = penjualan)
-  #rowwise() %>% 
-  #mutate(submission_date   = tanggal_submisi_func(submission_date),
-  #       tanggal_kegiatan  = ifelse(is.na(tanggal_kegiatan),
-  #                                  NA,
-  #                                  tanggal_submisi_func(tanggal_kegiatan)),
-  #       tanggal_transaksi = tanggal_submisi_func(tanggal_transaksi)) %>% 
-  #ungroup() %>% 
+  rename(penjualan_products = penjualan) %>% 
+  rowwise() %>% 
+  mutate(submission_date   = tanggal_submisi_func(submission_date),
+         #tanggal_kegiatan  = ifelse(is.na(tanggal_kegiatan),
+         #                          NA,
+         #                          tanggal_submisi_func(tanggal_kegiatan)),
+         tanggal_transaksi = tanggal_submisi_func(tanggal_transaksi)) %>% 
+  ungroup() 
   #select(-ip,-submission_id)
 
 # bikin unique id dulu
