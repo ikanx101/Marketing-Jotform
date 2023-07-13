@@ -664,7 +664,10 @@ server <- function(input, output,session) {
         print(i)
       }
       
-      data_final = do.call(rbind,data_temp)
+      data_final = 
+        do.call(rbind,data_temp) %>% 
+        mutate(bulan = lubridate::month(tanggal_kegiatan,label = T)) %>% 
+        relocate(bulan,.after = "tanggal_kegiatan")
       
       colnames(data_final) = proper_new(colnames(data_final))
       

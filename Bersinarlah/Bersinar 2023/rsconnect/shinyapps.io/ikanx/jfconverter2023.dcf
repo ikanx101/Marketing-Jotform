@@ -5,9 +5,9 @@ account: ikanx
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8002375
-bundleId: 7396860
+bundleId: 7451837
 url: https://ikanx.shinyapps.io/jfconverter2023/
-when: 1687943744.54246
-lastSyncTime: 1687943744.54251
+when: 1689240285.0932
+lastSyncTime: 1689240285.09322
 asMultiple: FALSE
 asStatic: FALSE

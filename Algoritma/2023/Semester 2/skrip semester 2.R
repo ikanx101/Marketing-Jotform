@@ -141,7 +141,10 @@ for(i in 1:n_iter){
   print(i)
 }
 
-data_final = do.call(rbind,data_temp)
+data_final = 
+  do.call(rbind,data_temp) %>% 
+  mutate(bulan = lubridate::month(tanggal_kegiatan,label = T)) %>% 
+  relocate(bulan,.after = "tanggal_kegiatan")
 
 colnames(data_final) = proper_new(colnames(data_final))
 openxlsx::write.xlsx(data_final,file = "output.xlsx")
