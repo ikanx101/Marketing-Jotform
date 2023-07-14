@@ -66,7 +66,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 br(),
                                 h4(paste0("update ",waktu_update)),
                                 h4("Apa yang berubah?"),
-                                h5("Membiarkan tanggal kegiatan as it is."),
+                                h5("Ada bulannya."),
                                 h5("Copyright 2023"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -664,10 +664,20 @@ server <- function(input, output,session) {
         print(i)
       }
       
+      # kita gabung data final
+      data_final = do.call(rbind,data_temp) 
+      # hitung bulan
+      bulan_hit  = lubridate::month(data_final$submission_date,label = T) %>% as.character()
+      
+      # gabungan data dan bebersih
       data_final = 
-        do.call(rbind,data_temp) %>% 
-        mutate(bulan = lubridate::month(tanggal_kegiatan,label = T)) %>% 
+        data_final %>% 
+        mutate(bulan = ifelse(is.na(tanggal_kegiatan),
+                              bulan_hit,
+                              gsub("[0-9]|\\,| ","",tanggal_kegiatan)
+        )) %>% 
         relocate(bulan,.after = "tanggal_kegiatan")
+      
       
       colnames(data_final) = proper_new(colnames(data_final))
       

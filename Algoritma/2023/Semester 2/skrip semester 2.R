@@ -141,10 +141,20 @@ for(i in 1:n_iter){
   print(i)
 }
 
+# kita gabung data final
+data_final = do.call(rbind,data_temp) 
+# hitung bulan
+bulan_hit  = lubridate::month(data_final$submission_date,label = T) %>% as.character()
+
+# gabungan data dan bebersih
 data_final = 
-  do.call(rbind,data_temp) %>% 
-  mutate(bulan = lubridate::month(tanggal_kegiatan,label = T)) %>% 
+  data_final %>% 
+  mutate(bulan = ifelse(is.na(tanggal_kegiatan),
+                        bulan_hit,
+                        gsub("[0-9]|\\,| ","",tanggal_kegiatan)
+                        )
+         ) %>% 
   relocate(bulan,.after = "tanggal_kegiatan")
 
-colnames(data_final) = proper_new(colnames(data_final))
-openxlsx::write.xlsx(data_final,file = "output.xlsx")
+#colnames(data_final) = proper_new(colnames(data_final))
+#openxlsx::write.xlsx(data_final,file = "output.xlsx")
