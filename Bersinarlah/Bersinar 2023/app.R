@@ -32,7 +32,7 @@ waktu_update = Sys.time() %>% as.character()
 # USER INTERFACE
 
 # header
-header = dashboardHeader(title = "Jotform Converter AM 2023 v4.0",
+header = dashboardHeader(title = "Jotform Converter AM 2024 v1.0",
                          titleWidth = 300)
 
 #sidebar menu
@@ -47,8 +47,10 @@ sidebar = dashboardSidebar(width = 300,
                                menuItem(tabName = 'spg',
                                         text = 'Converter SPG Event',icon = icon('child-dress')),
                                menuItem(tabName = 'form2023',
-                                        text = 'Converter Semester II 2023',icon = icon('calendar'),
-                                        badgeLabel = "N E W !", badgeColor = "yellow")
+                                        text = 'Converter Semester II 2023',icon = icon('calendar')),
+                               menuItem(tabName = 'form2024',
+                                        text = 'Converter Nutrihub dan Networking',icon = icon('calendar'),
+                                        badgeLabel = "N E W !", badgeColor = "red")
                                     )
                            )
 
@@ -66,8 +68,8 @@ filterpane = tabItem(tabName = 'filterpane',
                                 br(),
                                 h4(paste0("update ",waktu_update)),
                                 h4("Apa yang berubah?"),
-                                h5("Ada bulannya."),
-                                h5("Copyright 2023"),
+                                h5("Jotform Nutrihub dan Networking"),
+                                h5("Copyright 2024"),
                                 h5("Dibuat menggunakan R")
                          )
                      )
