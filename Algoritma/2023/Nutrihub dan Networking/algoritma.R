@@ -22,11 +22,6 @@ nama_file = "Format Jotform Nutrihub & Networking 2024.xlsx"
 sht       = excel_sheets(nama_file)
 df_input  = read_excel(nama_file,sheet = sht[1]) %>% janitor::clean_names()
 
-# kita akan ambil nama bulan
-tes = "Nov 14, 2023"
-
-as.Date(tes,"%B %d, %Y") %>% months()
-
 # ==============================================================================
 
 

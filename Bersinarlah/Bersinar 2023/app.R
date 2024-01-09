@@ -716,6 +716,101 @@ server <- function(input, output,session) {
         openxlsx::write.xlsx(data_4(), file)
       }
     )
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # =============================================================================
+    # converter FORM nutrihub dan networking TERBARU!!!
+    data_upload_5 <- reactive({
+      inFile <- input$target_upload_5
+      if (is.null(inFile))
+        return(NULL)
+      
+      # baca data
+      df_input <- 
+        read_excel(inFile$datapath) %>% 
+        janitor::clean_names() 
+      
+      # =================================
+      # mulai dari sini
+      # sekarang kita akan kerjakan proses konversinya
+      data_final = 
+        df_input %>% 
+        separate(departemen_provinsi_kota_kab,
+                 into = c("departemen","provinsi","kota_kab"),
+                 sep  = "\\;") %>% 
+        mutate(departemen = trimws(departemen),
+               provinsi   = trimws(provinsi),
+               kota_kab   = trimws(kota_kab)) %>% 
+        separate(pihak_yang_kerjasama_bentuk_kerjasama,
+                 into = c("pihak_yang_kerjasama","bentuk_kerjasama"),
+                 sep  = "\\;") %>% 
+        mutate(pihak_yang_kerjasama = trimws(pihak_yang_kerjasama),
+               bentuk_kerjasama     = trimws(bentuk_kerjasama)) %>% 
+        separate(entitas_sub_entitas,
+                 into = c("entitas","sub_entitas"),
+                 sep  = "\\;") %>% 
+        mutate(entitas     = trimws(entitas),
+               sub_entitas = trimws(sub_entitas)) %>% 
+        mutate(bulan       = as.Date(tanggal_kerjasama,"%B %d, %Y"),
+               bulan       = months(bulan)) %>% 
+        relocate(bulan,.after = "tanggal_kerjasama") 
+      
+      # kita rapihin colnames
+      tes = colnames(data_final)
+      tes = gsub("\\_"," ",tes)
+      
+      # fungsi untuk bikin judul proper
+      proper_new = function(x){
+        tess = stringi::stri_trans_general(x,id = "Title")
+        gsub("\\_"," ",tess)
+      }
+      
+      colnames(data_final) = proper_new(colnames(data_final))
+      
+      # =================================
+      # akhir di sini
+      return(data_final)
+    })
+    
+    data_5 = data_upload_5
+    
+    output$downloadData_5 <- downloadHandler(
+      filename = function() {
+        paste("Jotform Nutrihub dan Networking ", Sys.time(), ".xlsx", sep="")
+      },
+      content = function(file) {
+        openxlsx::write.xlsx(data_5(), file)
+      }
+    )
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 }
 
