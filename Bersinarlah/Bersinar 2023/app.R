@@ -33,10 +33,10 @@ waktu_update = Sys.time() %>% as.character()
 
 # header
 header = dashboardHeader(title = "Jotform Converter AM 2024 v1.0",
-                         titleWidth = 300)
+                         titleWidth = 400)
 
 #sidebar menu
-sidebar = dashboardSidebar(width = 300,
+sidebar = dashboardSidebar(width = 400,
                            sidebarMenu(
                                menuItem(tabName = 'filterpane',
                                         text = 'Read Me',icon = icon('check')),
@@ -138,9 +138,26 @@ form_2023 = tabItem(tabName = 'form2023',
                     )
             )
 
+# tab Form 2024 Semester II
+form_2024 = tabItem(tabName = 'form2024',
+                    fluidRow(
+                      column(width = 12,
+                             h1('Converter Form Baru Nutrihub dan Networking'),
+                             h3("Perhatikan FORMAT TANGGAL pada file yang hendak dikonversi!"),
+                             br(),
+                             h4("Silakan upload file Anda:"),
+                             fileInput('target_upload_5', 'Pilih file',
+                                       accept = c('xlsx')
+                             ),
+                             br(),
+                             downloadButton("downloadData_5", "Download")
+                      )
+                    )
+          )
+
 
 # body
-body = dashboardBody(tabItems(filterpane,converter,awareness,spg_event,form_2023))
+body = dashboardBody(tabItems(filterpane,converter,awareness,spg_event,form_2023,form_2024))
 
 # ui all
 ui = secure_app(dashboardPage(skin = "blue",header,sidebar,body))
