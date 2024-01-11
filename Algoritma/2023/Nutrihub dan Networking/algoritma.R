@@ -4,7 +4,7 @@
 # khusus nutrihub dan networking
 #
 # created by ikanx101.com
-# 9 januari 2024
+# 11 januari 2024
 # ==============================================================================
 
 
@@ -45,7 +45,7 @@ data_final =
            sep  = "\\;") %>% 
   mutate(entitas     = trimws(entitas),
          sub_entitas = trimws(sub_entitas)) %>% 
-  mutate(bulan       = as.Date(tanggal_kerjasama,"%B %d, %Y"),
+  mutate(bulan       = as.Date(tanggal_kerjasama,"%d/%m/%Y"),
          bulan       = months(bulan)) %>% 
   relocate(bulan,.after = "tanggal_kerjasama") 
 
