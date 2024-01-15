@@ -18,7 +18,7 @@ library(readxl)
 library(openxlsx)
 
 # ambil files
-nama_file = "Format Jotform Nutrihub & Networking 2024.xlsx"
+nama_file = "[rawdata] Jotform_Networking_Nutrihub_S2024-01-14_09_24_16.xlsx"
 sht       = excel_sheets(nama_file)
 df_input  = read_excel(nama_file,sheet = sht[1]) %>% janitor::clean_names()
 
