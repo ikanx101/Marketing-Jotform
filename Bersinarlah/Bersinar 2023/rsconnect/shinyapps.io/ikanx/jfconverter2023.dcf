@@ -1,11 +1,12 @@
 name: jfconverter2023
-title: jfconverter2023
-username:
+title:
+username: ikanx
 account: ikanx
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 8002375
-bundleId: 8144510
+appId: 11465350
+bundleId: 8361626
 url: https://ikanx.shinyapps.io/jfconverter2023/
+version: 1
 asMultiple: FALSE
 asStatic: FALSE
