@@ -51,8 +51,10 @@ sidebar = dashboardSidebar(width = 400,
                                menuItem(tabName = 'form2024',
                                         text = 'Converter Nutrihub dan Networking',icon = icon('calendar')),
                                menuItem(tabName = 'jessyanti',
-                                        text = 'AV Sales & AM',icon = icon('globe'),
-                                        badgeLabel = "N E W !", badgeColor = "yellow")
+                                        text = 'AV Sales & AM',icon = icon('globe')),
+                               menuItem(tabName = 'rendy_kosasih',
+                                        text = 'Converter Project AV Sales',icon = icon('cloud'),
+                                        badgeLabel = "N E W !", badgeColor = "olive")
                                     )
                            )
 
@@ -175,13 +177,30 @@ jessyanti = tabItem(tabName = 'jessyanti',
           )
 
 
+# tab khusus rendy kosasih
+rendy_kosasih = tabItem(tabName = 'rendy_kosasih',
+                    fluidRow(
+                      column(width = 12,
+                             h1('Converter Form Baru AV Sales dan AM'),
+                             h3("Perhatikan FORMAT TANGGAL pada file yang hendak dikonversi!"),
+                             h3("Perbedaan form antara AM dan DD sudah terakomodir"),
+                             br(),
+                             h4("Silakan upload file Anda:"),
+                             fileInput('target_upload_7', 'Pilih file',
+                                       accept = c('xlsx')
+                             ),
+                             br(),
+                             downloadButton("downloadData_7", "Download")
+                      )
+                    )
+)
 
 
 
 
 # body
 body = dashboardBody(tabItems(filterpane,converter,awareness,spg_event,form_2023,form_2024,
-                              jessyanti))
+                              jessyanti,rendy_kosasih))
 
 # ui all
 ui = secure_app(dashboardPage(skin = "blue",header,sidebar,body))
@@ -950,6 +969,128 @@ server <- function(input, output,session) {
     
     
     
+    # =============================================================================
+    # converter AV Sales & AM TERBARU!!!
+    # RENDY KOSASIH
+    data_upload_7 <- reactive({
+      inFile <- input$target_upload_7
+      if (is.null(inFile))
+        return(NULL)
+      
+      # baca data
+      df_input <- 
+        read_excel(inFile$datapath) %>% 
+        janitor::clean_names() 
+      
+      # =================================
+      # mulai dari sini
+      # sekarang kita akan kerjakan proses konversinya
+      
+      # fungsi untuk bikin judul proper
+      proper_new = function(x){
+        tess = stringi::stri_trans_general(x,id = "Title")
+        gsub("\\_"," ",tess)
+      }
+      
+      # kita mulai dari sini
+      df_target = df_input
+      marker    = ncol(df_target)
+      
+      if(marker == 3){
+        # kita pecahin
+        tarjeta =
+          df_target %>% 
+          mutate(submission_date = as.Date(submission_date,"%Y-%m-%d")) %>% 
+          separate(pic_area_klasifikasi_customer_customer_code,
+                   sep  = "\\,",
+                   into = c("pic","area","klasifikasi_customer","customer_code")) %>% 
+          mutate(pic                  = stringr::str_trim(pic),
+                 area                 = stringr::str_trim(area),
+                 klasifikasi_customer = stringr::str_trim(klasifikasi_customer),
+                 customer_code        = stringr::str_trim(customer_code)
+          ) %>% 
+          separate_rows(product_list,sep = "\r\n") %>% 
+          separate(product_list,
+                   sep  = "\\(Amount:",
+                   into = c("products","pecah")) %>% 
+          separate(pecah,
+                   sep  = "\\:",
+                   into = c("hapus","status_produk")) %>% 
+          rename(amount = hapus) %>% 
+          mutate(products      = stringr::str_trim(products),
+                 status_produk = stringr::str_trim(status_produk),
+                 status_produk = gsub("\\)","",status_produk),
+                 amount        = 0) %>% 
+          rowwise() %>% 
+          mutate(brand = case_when(
+            grepl("ts",products,ignore.case = T)               ~ "TS",
+            grepl("lmen|l men|l-men",products,ignore.case = T) ~ "L-Men",
+            grepl("ns|nutri",products,ignore.case = T)         ~ "NS",
+            grepl("lokal",products,ignore.case = T)            ~ "Lokalate",
+            grepl("Diabetamil",products,ignore.case = T)       ~ "Diabetamil",
+            grepl("hilo|hi lo",products,ignore.case = T)       ~ "HILO")) %>% 
+          ungroup() %>% 
+          filter(!grepl("total",products,ignore.case = T))
+      }
+      
+      
+      if(marker == 4){
+        # kita pecahin
+        tarjeta =
+          df_target %>% 
+          mutate(submission_date = as.Date(submission_date,"%Y-%m-%d")) %>% 
+          separate(area_klasifikasi_customer_customer_code,
+                   sep  = "\\,",
+                   into = c("area","klasifikasi_customer","customer_code")) %>% 
+          mutate(pic                  = stringr::str_trim(pic),
+                 area                 = stringr::str_trim(area),
+                 klasifikasi_customer = stringr::str_trim(klasifikasi_customer),
+                 customer_code        = stringr::str_trim(customer_code)
+          ) %>% 
+          separate_rows(product_list,sep = "\r\n") %>% 
+          separate(product_list,
+                   sep  = "\\(Amount:",
+                   into = c("products","pecah")) %>% 
+          separate(pecah,
+                   sep  = "\\:",
+                   into = c("hapus","status_produk")) %>% 
+          rename(amount = hapus) %>% 
+          mutate(products      = stringr::str_trim(products),
+                 status_produk = stringr::str_trim(status_produk),
+                 status_produk = gsub("\\)","",status_produk),
+                 amount        = 0) %>% 
+          rowwise() %>% 
+          mutate(brand = case_when(
+            grepl("ts",products,ignore.case = T)               ~ "TS",
+            grepl("lmen|l men|l-men",products,ignore.case = T) ~ "L-Men",
+            grepl("ns|nutri",products,ignore.case = T)         ~ "NS",
+            grepl("lokal",products,ignore.case = T)            ~ "Lokalate",
+            grepl("Diabetamil",products,ignore.case = T)       ~ "Diabetamil",
+            grepl("hilo|hi lo",products,ignore.case = T)       ~ "HILO")) %>% 
+          ungroup() %>% 
+          filter(!grepl("total",products,ignore.case = T))
+      }
+      
+      # hasil akhir
+      data_final = tarjeta
+      # kita rapihin colnames
+      colnames(data_final) = proper_new(colnames(data_final))
+      
+      # =================================
+      # akhir di sini
+      return(data_final)
+    })
+    
+    data_7 = data_upload_7
+    
+    output$downloadData_7 <- downloadHandler(
+      filename = function() {
+        paste("Jotform Project AV Sales ", Sys.time(), ".xlsx", sep="")
+      },
+      content = function(file) {
+        openxlsx::write.xlsx(data_7(), file)
+      }
+    )
     
     
     
