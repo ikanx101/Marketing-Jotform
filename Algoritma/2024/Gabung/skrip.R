@@ -9,7 +9,7 @@ files = list.files()
 df_am = read_excel(files[1]) %>% janitor::clean_names()
 df_dd = read_excel(files[2]) %>% janitor::clean_names()
 
-df_target = df_dd
+df_target = df_am
 marker    = ncol(df_target)
 
 if(marker == 3){
@@ -19,7 +19,7 @@ if(marker == 3){
     mutate(submission_date = as.Date(submission_date,"%Y-%m-%d")) %>% 
     separate(pic_area_klasifikasi_customer_customer_code,
              sep  = "\\,",
-             into = c("pic","area","klasifikasi_customer","customer_code")) %>% 
+             into = c("pic","area","klasifikasi_customer","customer_name","customer_code")) %>% 
     mutate(pic                  = stringr::str_trim(pic),
            area                 = stringr::str_trim(area),
            klasifikasi_customer = stringr::str_trim(klasifikasi_customer),
@@ -57,7 +57,7 @@ if(marker == 4){
     mutate(submission_date = as.Date(submission_date,"%Y-%m-%d")) %>% 
     separate(area_klasifikasi_customer_customer_code,
              sep  = "\\,",
-             into = c("area","klasifikasi_customer","customer_code")) %>% 
+             into = c("area","klasifikasi_customer","customer_name","customer_code")) %>% 
     mutate(pic                  = stringr::str_trim(pic),
            area                 = stringr::str_trim(area),
            klasifikasi_customer = stringr::str_trim(klasifikasi_customer),
@@ -87,3 +87,4 @@ if(marker == 4){
     filter(!grepl("total",products,ignore.case = T))
 }
 
+tarjeta
