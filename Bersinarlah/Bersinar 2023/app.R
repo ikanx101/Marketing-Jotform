@@ -47,7 +47,8 @@ sidebar = dashboardSidebar(width = 400,
                                menuItem(tabName = 'spg',
                                         text = 'Converter SPG Event',icon = icon('child-dress')),
                                menuItem(tabName = 'form2023',
-                                        text = 'Converter Semester II 2023',icon = icon('calendar')),
+                                        text = 'Converter Semester II 2023',icon = icon('calendar'),
+                                        badgeLabel = "Revisi!", badgeColor = "yellow"),
                                menuItem(tabName = 'form2024',
                                         text = 'Converter Nutrihub dan Networking',icon = icon('calendar')),
                                menuItem(tabName = 'jessyanti',
@@ -72,7 +73,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 br(),
                                 h4(paste0("update ",waktu_update)),
                                 h4("Apa yang berubah?"),
-                                h5("Jotform AV Sales dan AM"),
+                                h5("Penambahan subchannel 2 pada form semester II 2023"),
                                 h5("Copyright 2024"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -646,11 +647,12 @@ server <- function(input, output,session) {
                kota_kab = trimws(kota_kab),
                kecamatan = trimws(kecamatan)) %>% 
         separate(projek_jenis_channel_sub_channel,
-                 into = c("project","jenis_channel","sub_channel"),
+                 into = c("project","jenis_channel","sub_channel_1","sub_channel_2"),
                  sep = "\\;") %>% 
         mutate(project = trimws(project),
                jenis_channel = trimws(jenis_channel),
-               sub_channel = trimws(sub_channel)) %>% 
+               sub_channel_1 = trimws(sub_channel_1),
+               sub_channel_2 = trimws(sub_channel_2)) %>% 
         separate(brand_tidak_deal,
                  into = c("brand_tidak_deal_1","brand_tidak_deal_2",
                           "brand_tidak_deal_3"),

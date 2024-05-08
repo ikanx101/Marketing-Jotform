@@ -61,11 +61,12 @@ data_1 =
          kota_kab = trimws(kota_kab),
          kecamatan = trimws(kecamatan)) %>% 
   separate(projek_jenis_channel_sub_channel,
-           into = c("project","jenis_channel","sub_channel"),
+           into = c("project","jenis_channel","sub_channel_1","sub_channel_2"),
            sep = "\\;") %>% 
   mutate(project = trimws(project),
          jenis_channel = trimws(jenis_channel),
-         sub_channel = trimws(sub_channel)) %>% 
+         sub_channel_1 = trimws(sub_channel_1),
+         sub_channel_2 = trimws(sub_channel_2)) %>% 
   separate(brand_tidak_deal,
            into = c("brand_tidak_deal_1","brand_tidak_deal_2",
                     "brand_tidak_deal_3"),
@@ -156,5 +157,5 @@ data_final =
          ) %>% 
   relocate(bulan,.after = "tanggal_kegiatan")
 
-#colnames(data_final) = proper_new(colnames(data_final))
-#openxlsx::write.xlsx(data_final,file = "output.xlsx")
+colnames(data_final) = proper_new(colnames(data_final))
+openxlsx::write.xlsx(data_final,file = "output.xlsx")
