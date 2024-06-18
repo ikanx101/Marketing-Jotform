@@ -32,7 +32,7 @@ waktu_update = Sys.time() %>% format("%B %d, %Y - %H:%M")
 # USER INTERFACE
 
 # header
-header = dashboardHeader(title = "Jotform Converter AM 2024 v1.0",
+header = dashboardHeader(title = "Jotform Converter AM 2024 v2.0",
                          titleWidth = 400)
 
 #sidebar menu
@@ -47,15 +47,17 @@ sidebar = dashboardSidebar(width = 400,
                                menuItem(tabName = 'spg',
                                         text = 'Converter SPG Event',icon = icon('child-dress')),
                                menuItem(tabName = 'form2023',
-                                        text = 'Converter Semester II 2023',icon = icon('calendar'),
-                                        badgeLabel = "Revisi!", badgeColor = "yellow"),
+                                        text = 'Converter Semester II 2023',icon = icon('calendar')),
                                menuItem(tabName = 'form2024',
                                         text = 'Converter Nutrihub dan Networking',icon = icon('calendar')),
                                menuItem(tabName = 'jessyanti',
                                         text = 'AV Sales & AM',icon = icon('globe')),
                                menuItem(tabName = 'rendy_kosasih',
-                                        text = 'Converter Project AV Sales',icon = icon('cloud'),
-                                        badgeLabel = "N E W !", badgeColor = "olive")
+                                        text = 'Converter Project AV Sales',icon = icon('cloud')),
+                               menuItem(tabName = 'rendy_kosasih_v2',
+                                        text = 'Converter Project AV Sales V2',icon = icon('cloud'),
+                                        badgeLabel = "N E W !", badgeColor = "yellow")
+                               
                                     )
                            )
 
@@ -73,7 +75,7 @@ filterpane = tabItem(tabName = 'filterpane',
                                 br(),
                                 h4(paste0("update ",waktu_update)),
                                 h4("Apa yang berubah?"),
-                                h5("Penambahan subchannel 2 pada form semester II 2023"),
+                                h5("Versi jotform AV sales 2.0"),
                                 h5("Copyright 2024"),
                                 h5("Dibuat menggunakan R")
                          )
@@ -197,11 +199,27 @@ rendy_kosasih = tabItem(tabName = 'rendy_kosasih',
 )
 
 
-
+# tab khusus rendy kosasih versi 2
+# ribet banget sih request mulu yak
+rendy_kosasih_v2 = tabItem(tabName = 'rendy_kosasih_v2',
+                        fluidRow(
+                          column(width = 12,
+                                 h1('Converter Form Baru AV Sales V2'),
+                                 h3("Perhatikan FORMAT TANGGAL pada file yang hendak dikonversi!"),
+                                 br(),
+                                 h4("Silakan upload file Anda:"),
+                                 fileInput('target_upload_8', 'Pilih file',
+                                           accept = c('xlsx')
+                                 ),
+                                 br(),
+                                 downloadButton("downloadData_8", "Download")
+                          )
+                        )
+)
 
 # body
 body = dashboardBody(tabItems(filterpane,converter,awareness,spg_event,form_2023,form_2024,
-                              jessyanti,rendy_kosasih))
+                              jessyanti,rendy_kosasih,rendy_kosasih_v2))
 
 # ui all
 ui = secure_app(dashboardPage(skin = "blue",header,sidebar,body))
@@ -1099,10 +1117,128 @@ server <- function(input, output,session) {
     
     
     
+    # =============================================================================
+    # converter AV Sales 
+    # RENDY KOSASIH VERSION 2.0
+    data_upload_8 <- reactive({
+      inFile <- input$target_upload_8
+      if (is.null(inFile))
+        return(NULL)
+      
+      # baca data
+      df_input <- 
+        read_excel(inFile$datapath) %>% 
+        janitor::clean_names() 
+      
+      # =================================
+      # mulai dari sini
+      # sekarang kita akan kerjakan proses konversinya
+      
+      # function untuk split tanggal submisi
+      tanggal_submisi_func = function(tgl) {
+        # proses split tanggal
+        # tgl = as.Date(tgl,"%Y-%m-%d %hh:%mm:ss")
+        tgl = lubridate::date(tgl)
+        tgl = format(tgl, "%m/%d/%Y")
+        # output tanggal
+        return(tgl)
+      }
+      
+      # fungsi untuk bikin judul proper
+      proper_new = function(x) {
+        tess = stringi::stri_trans_general(x, id = "Title")
+        gsub("\\_", " ", tess)
+      }
+      
+      # kita mulai dari sini
+      # memanggil dataset baru
+      data =
+        df_input |> 
+        rowwise() %>%
+        mutate(submission_date = tanggal_submisi_func(submission_date)) %>%
+        ungroup() %>%
+        separate(
+          spg_area_klasifikasi_customer_customer_code,
+          into = c(
+            "nama_spg",
+            "area",
+            "klasifikasi_customer",
+            "customer_code"
+          ),
+          sep = "\\,"
+        ) %>%
+        mutate(
+          `nama_spg`             = trimws(`nama_spg`),
+          `area`                 = trimws(area),
+          `klasifikasi_customer` = trimws(`klasifikasi_customer`),
+          `customer_code`        = trimws(`customer_code`)
+        )
+      
+      # kita tambahkan variabel id
+      data$id = 1:nrow(data)
+      
+      # kita akan pisah terlebih dahulu
+      data_1 = data %>% select(id,
+                               submission_date,
+                               area,
+                               nama_spg,
+                               klasifikasi_customer,
+                               customer_code)
+      
+      # kita akan pilih hanya data product list
+      data_2 = data %>% select(id, my_products)
+      
+      # data kedua adalah bentuk tabular dari penjualan
+      data_3 =
+        data_2 %>%
+        rename(penjualan = my_products) %>%
+        separate_rows(penjualan, sep = "\n") %>%  
+        mutate(penjualan = trimws(penjualan)) |> 
+        filter(!grepl("total", penjualan, ignore.case = T)) |> 
+        separate(penjualan,
+                 into = c("produk_list", "dummy"),
+                 sep = "\\(Amount:") |> 
+        mutate(produk_list = trimws(produk_list)) %>%
+        separate(dummy, into = c("amount", "quantity"), sep = "IDR, :") |> 
+        mutate(amount = trimws(amount),
+               amount = as.numeric(amount)) |> 
+        mutate(quantity = gsub("\\)","",quantity),
+               quantity = trimws(quantity)) |> 
+        rename(status_produk = quantity) |> 
+        rowwise() %>%
+        mutate(
+          brand = case_when(
+            grepl("ts", produk_list, ignore.case = T) ~ "TS",
+            grepl("lmen|l men|l-men", produk_list, ignore.case = T) ~ "L-Men",
+            grepl("ns|nutri", produk_list, ignore.case = T) ~ "NS",
+            grepl("lokal|lklt", produk_list, ignore.case = T) ~ "Lokalate",
+            grepl("Diabetamil", produk_list, ignore.case = T) ~ "Diabetamil",
+            grepl("hilo|hi lo", produk_list, ignore.case = T) ~ "HILO"
+          )
+        ) %>%
+        ungroup()
+      
+      # kita kumpulin dulu data_1, data_2, data_3
+      data_kumpul = merge(data_1, data_3) %>% select(-id)
+      colnames(data_kumpul) = proper_new(colnames(data_kumpul))
+      
+      # =================================
+      # akhir di sini
+      return(data_kumpul)
+    })
+    
+    data_8 = data_upload_8
+    
+    output$downloadData_8 <- downloadHandler(
+      filename = function() {
+        paste("Jotform Project AV Sales versi 2 ", Sys.time(), ".xlsx", sep="")
+      },
+      content = function(file) {
+        openxlsx::write.xlsx(data_8(), file)
+      }
+    )
     
     
-    
-
 }
 
 # Run the application 
